@@ -19,6 +19,7 @@ export const TimelineEvents: React.FC<TimelineEventsProps> = ({
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<WeddingEvent | null>(null);
+  const [eventToDelete, setEventToDelete] = useState<WeddingEvent | null>(null);
 
   // Form State
   const [name, setName] = useState('');
@@ -185,6 +186,7 @@ export const TimelineEvents: React.FC<TimelineEventsProps> = ({
             {/* Actions */}
             <div className="flex items-center gap-2 self-end md:self-center">
               <button
+                type="button"
                 onClick={() => openEditModal(evt)}
                 className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
                 title="Edit Event"
@@ -192,11 +194,8 @@ export const TimelineEvents: React.FC<TimelineEventsProps> = ({
                 <Edit2 className="w-4 h-4" />
               </button>
               <button
-                onClick={() => {
-                  if (confirm(`Delete event "${evt.name}"?`)) {
-                    onDeleteEvent(evt.id);
-                  }
-                }}
+                type="button"
+                onClick={() => setEventToDelete(evt)}
                 className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                 title="Delete Event"
               >
@@ -335,22 +334,79 @@ export const TimelineEvents: React.FC<TimelineEventsProps> = ({
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-rose-600 text-white font-semibold text-sm hover:bg-rose-700"
-                >
-                  Save Ceremony
-                </button>
+              <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-100">
+                {editingEvent ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onDeleteEvent(editingEvent.id);
+                      setIsModalOpen(false);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100 text-xs font-semibold transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Ceremony</span>
+                  </button>
+                ) : <div />}
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 rounded-xl bg-rose-600 text-white font-semibold text-sm hover:bg-rose-700 shadow-sm"
+                  >
+                    Save Ceremony
+                  </button>
+                </div>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* In-App Delete Event Confirmation Modal */}
+      {eventToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-slate-100 space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 shadow-xs">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Delete Ceremony</h3>
+                <p className="text-xs text-slate-500">Are you sure you want to remove this ceremony?</p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 text-sm font-semibold text-slate-800">
+              "{eventToDelete.name}" • {eventToDelete.date}
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setEventToDelete(null)}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onDeleteEvent(eventToDelete.id);
+                  setEventToDelete(null);
+                }}
+                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-600/20 transition-colors"
+              >
+                Yes, Delete Ceremony
+              </button>
+            </div>
           </div>
         </div>
       )}

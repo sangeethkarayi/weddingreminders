@@ -108,7 +108,7 @@ export const getLocalBudget = (): BudgetItem[] => {
     const data = localStorage.getItem(STORAGE_KEYS.BUDGET);
     if (!data) return initialBudgetItems;
     const parsed = JSON.parse(data);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : initialBudgetItems;
+    return Array.isArray(parsed) ? parsed : initialBudgetItems;
   } catch (e) {
     console.error('Error reading budget from localStorage', e);
     return initialBudgetItems;

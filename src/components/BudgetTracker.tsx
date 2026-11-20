@@ -34,6 +34,7 @@ export const BudgetTracker: React.FC<BudgetTrackerProps> = ({
   const [selectedPayer, setSelectedPayer] = useState<string>('all');
   const [isEditingTarget, setIsEditingTarget] = useState(false);
   const [newTargetInput, setNewTargetInput] = useState(String(settings.targetBudget || 1500000));
+  const [expenseToDelete, setExpenseToDelete] = useState<BudgetItem | null>(null);
 
   // Totals
   const { totalEstimated, totalActual, totalPaid, totalBalanceDue } = useMemo(() => {
@@ -521,23 +522,23 @@ export const BudgetTracker: React.FC<BudgetTrackerProps> = ({
                       )}
 
                       <button
+                        type="button"
                         onClick={() => onEditExpense(item)}
-                        className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-semibold transition-colors"
                         title="Edit Expense"
                       >
-                        <Edit2 className="w-4 h-4" />
+                        <Edit2 className="w-3.5 h-3.5" />
+                        <span>Edit</span>
                       </button>
 
                       <button
-                        onClick={() => {
-                          if (confirm(`Delete expense "${item.title}"?`)) {
-                            onDeleteExpense(item.id);
-                          }
-                        }}
-                        className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                        type="button"
+                        onClick={() => setExpenseToDelete(item)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100 text-xs font-semibold transition-colors"
                         title="Delete Expense"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Delete</span>
                       </button>
                     </div>
                   </div>
@@ -602,6 +603,47 @@ export const BudgetTracker: React.FC<BudgetTrackerProps> = ({
           </div>
         )}
       </div>
+
+      {/* In-App Delete Expense Confirmation Modal */}
+      {expenseToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-slate-100 space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 shadow-xs">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Delete Expense</h3>
+                <p className="text-xs text-slate-500">Are you sure you want to remove this expense?</p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 text-sm font-semibold text-slate-800">
+              "{expenseToDelete.title}"
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setExpenseToDelete(null)}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onDeleteExpense(expenseToDelete.id);
+                  setExpenseToDelete(null);
+                }}
+                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-600/20 transition-colors"
+              >
+                Yes, Delete Expense
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Phone, Users, Moon, Sun, Check, FolderTree } from 'lucide-react';
+import { X, User, Phone, Users, Moon, Sun, Check, FolderTree, Trash2 } from 'lucide-react';
 import { Guest, RSVPStatus, WeddingSettings } from '../types/wedding';
 
 interface GuestModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (guest: Guest) => void;
+  onDelete?: (id: string) => void;
   guestToEdit?: Guest | null;
   settings: WeddingSettings;
   defaultInvitedBy?: string;
@@ -18,6 +19,7 @@ export const GuestModal: React.FC<GuestModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  onDelete,
   guestToEdit,
   settings,
   defaultInvitedBy,
@@ -509,20 +511,36 @@ export const GuestModal: React.FC<GuestModalProps> = ({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium text-sm transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-sm shadow-md shadow-rose-600/20 transition-colors"
-            >
-              {guestToEdit ? 'Save Changes' : 'Add Guest to Category'}
-            </button>
+          <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-100">
+            {guestToEdit && onDelete ? (
+              <button
+                type="button"
+                onClick={() => {
+                  onDelete(guestToEdit.id);
+                  onClose();
+                }}
+                className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2.5 rounded-xl border border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100 font-semibold text-xs sm:text-sm transition-colors"
+              >
+                <Trash2 className="w-4 h-4 text-rose-600" />
+                <span>Delete Guest</span>
+              </button>
+            ) : <div />}
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 sm:px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium text-xs sm:text-sm transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-5 sm:px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs sm:text-sm shadow-md shadow-rose-600/20 transition-colors"
+              >
+                {guestToEdit ? 'Save Changes' : 'Add Guest to Category'}
+              </button>
+            </div>
           </div>
         </form>
       </div>

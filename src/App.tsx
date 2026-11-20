@@ -480,6 +480,7 @@ export function App() {
           setModalDefaultCategory(undefined);
         }}
         onSave={handleSaveGuest}
+        onDelete={handleDeleteGuest}
         guestToEdit={guestToEdit}
         settings={settings}
         defaultInvitedBy={modalDefaultInvitedBy || selectedInviterFilter}
@@ -493,6 +494,7 @@ export function App() {
           setExpenseToEdit(null);
         }}
         onSave={handleSaveExpense}
+        onDelete={handleDeleteExpense}
         itemToEdit={expenseToEdit}
         settings={settings}
       />

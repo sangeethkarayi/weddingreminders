@@ -31,6 +31,7 @@ export const GuestList: React.FC<GuestListProps> = ({
   const [selectedHead, setSelectedHead] = useState<string>(activeInviterFilter || 'all');
   const [selectedEventFilter, setSelectedEventFilter] = useState<'all' | '19_dec_confirmed' | '20_dec_confirmed' | 'pending' | 'declined'>('all');
   const [collapsedCategories, setCollapsedCategories] = useState<{ [key: string]: boolean }>({});
+  const [guestToDelete, setGuestToDelete] = useState<Guest | null>(null);
 
   // Sync prop changes
   React.useEffect(() => {
@@ -479,12 +480,9 @@ export const GuestList: React.FC<GuestListProps> = ({
                                   </button>
 
                                   <button
-                                    onClick={() => {
-                                      if (confirm(`Remove ${guest.name}?`)) {
-                                        onDeleteGuest(guest.id);
-                                      }
-                                    }}
-                                    className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                    type="button"
+                                    onClick={() => setGuestToDelete(guest)}
+                                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                                     title="Delete Guest"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
@@ -619,6 +617,47 @@ export const GuestList: React.FC<GuestListProps> = ({
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* In-App Delete Guest Confirmation Modal */}
+      {guestToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-slate-100 space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 shadow-xs">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Remove Guest</h3>
+                <p className="text-xs text-slate-500">Are you sure you want to remove this guest?</p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 text-sm font-semibold text-slate-800">
+              "{guestToDelete.name}" • {guestToDelete.invitedBy} ({guestToDelete.category || 'General'})
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setGuestToDelete(null)}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onDeleteGuest(guestToDelete.id);
+                  setGuestToDelete(null);
+                }}
+                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-600/20 transition-colors"
+              >
+                Yes, Remove Guest
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
