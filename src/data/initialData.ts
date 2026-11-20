@@ -1,9 +1,20 @@
-import { Guest, WeddingReminder, WeddingEvent, WeddingSettings, BudgetItem } from '../types/wedding';
+import { Guest, WeddingReminder, WeddingEvent, WeddingSettings, BudgetItem, FirebaseSyncConfig } from '../types/wedding';
 
 // Wedding Date: Dec 20, 2026 at Wedding Hall
 // Pre-wedding Function: Dec 19, 2026 at Bride's Home
 const weddingDateObj = new Date('2026-12-20T09:30:00');
 const nightBeforeDateObj = new Date('2026-12-19T18:30:00');
+
+export const defaultFirebaseConfig: FirebaseSyncConfig = {
+  apiKey: "AIzaSyA4RvGqpHFv9814mNPUsciOWIn8W6WbQjE",
+  authDomain: "jishnu-swathi-wedding.firebaseapp.com",
+  projectId: "jishnu-swathi-wedding",
+  storageBucket: "jishnu-swathi-wedding.firebasestorage.app",
+  messagingSenderId: "770412658551",
+  appId: "1:770412658551:web:21dfef349123f73b78ab72",
+  measurementId: "G-5VH8EEVTJE",
+  syncCode: "WED-JISHNU-SWATHI",
+};
 
 export const initialSettings: WeddingSettings = {
   groomName: 'Jishnu',
@@ -37,8 +48,9 @@ export const initialSettings: WeddingSettings = {
     'Suresh',
     'Neighbours'
   ],
-  cloudSyncEnabled: false,
+  cloudSyncEnabled: true,
   syncRoomCode: 'WED-JISHNU-SWATHI',
+  firebaseConfig: defaultFirebaseConfig,
 };
 
 export const initialEvents: WeddingEvent[] = [

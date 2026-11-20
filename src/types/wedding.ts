@@ -117,6 +117,7 @@ export interface FirebaseSyncConfig {
   storageBucket: string;
   messagingSenderId: string;
   appId: string;
+  measurementId?: string;
   syncCode?: string;
 }
 

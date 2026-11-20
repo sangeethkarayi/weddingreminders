@@ -83,30 +83,43 @@ export function App() {
 
   // Initialize Cloud Sync Listener
   useEffect(() => {
-    initCloudSync(settings, (remotePayload) => {
-      if (remotePayload) {
-        if (remotePayload.guests) {
-          setGuests(remotePayload.guests);
-          saveLocalGuests(remotePayload.guests);
+    initCloudSync(
+      settings,
+      (remotePayload) => {
+        if (remotePayload) {
+          if (remotePayload.guests) {
+            setGuests(remotePayload.guests);
+            saveLocalGuests(remotePayload.guests);
+          }
+          if (remotePayload.reminders) {
+            setReminders(remotePayload.reminders);
+            saveLocalReminders(remotePayload.reminders);
+          }
+          if (remotePayload.events) {
+            setEvents(remotePayload.events);
+            saveLocalEvents(remotePayload.events);
+          }
+          if (remotePayload.settings) {
+            setSettings(remotePayload.settings);
+            saveLocalSettings(remotePayload.settings);
+          }
+          if (remotePayload.budget) {
+            setBudgetItems(remotePayload.budget);
+            saveLocalBudget(remotePayload.budget);
+          }
         }
-        if (remotePayload.reminders) {
-          setReminders(remotePayload.reminders);
-          saveLocalReminders(remotePayload.reminders);
-        }
-        if (remotePayload.events) {
-          setEvents(remotePayload.events);
-          saveLocalEvents(remotePayload.events);
-        }
-        if (remotePayload.settings) {
-          setSettings(remotePayload.settings);
-          saveLocalSettings(remotePayload.settings);
-        }
-        if (remotePayload.budget) {
-          setBudgetItems(remotePayload.budget);
-          saveLocalBudget(remotePayload.budget);
-        }
+      },
+      () => {
+        // Initial upload if Firestore room document doesn't exist yet
+        syncToCloud({
+          guests,
+          reminders,
+          events,
+          settings,
+          budget: budgetItems,
+        });
       }
-    });
+    );
   }, [settings.cloudSyncEnabled, settings.syncRoomCode, settings.firebaseConfig]);
 
   // Guest Handlers

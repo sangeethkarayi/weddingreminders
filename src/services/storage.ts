@@ -24,6 +24,12 @@ export const getLocalSettings = (): WeddingSettings => {
     if (!parsed.familyMembers?.includes('Ramachandran (Father)')) {
       return initialSettings;
     }
+    if (!parsed.firebaseConfig || !parsed.firebaseConfig.apiKey) {
+      parsed.firebaseConfig = initialSettings.firebaseConfig;
+      parsed.cloudSyncEnabled = true;
+      parsed.syncRoomCode = parsed.syncRoomCode || 'WED-JISHNU-SWATHI';
+      saveLocalSettings(parsed);
+    }
     return parsed;
   } catch (e) {
     console.error('Error reading settings from localStorage', e);
@@ -135,7 +141,8 @@ export interface WeddingCloudPayload {
 
 export const initCloudSync = (
   settings: WeddingSettings,
-  onRemoteUpdate: (payload: WeddingCloudPayload) => void
+  onRemoteUpdate: (payload: WeddingCloudPayload) => void,
+  onRemoteEmpty?: () => void
 ): boolean => {
   if (unsubscribeFirestore) {
     unsubscribeFirestore();
@@ -155,7 +162,7 @@ export const initCloudSync = (
     }
     firestoreDb = getFirestore(firebaseApp);
 
-    const roomCode = settings.syncRoomCode || 'WED-DEFAULT';
+    const roomCode = settings.syncRoomCode || 'WED-JISHNU-SWATHI';
     const docRef = doc(firestoreDb, 'wedding_rooms', roomCode);
 
     unsubscribeFirestore = onSnapshot(docRef, (docSnap) => {
@@ -163,6 +170,10 @@ export const initCloudSync = (
         const data = docSnap.data() as WeddingCloudPayload;
         if (data) {
           onRemoteUpdate(data);
+        }
+      } else {
+        if (onRemoteEmpty) {
+          onRemoteEmpty();
         }
       }
     }, (error) => {
@@ -185,12 +196,23 @@ export const syncToCloud = async (
     budget?: BudgetItem[];
   }
 ): Promise<boolean> => {
-  if (!payload.settings.cloudSyncEnabled || !firestoreDb) {
+  if (!payload.settings.cloudSyncEnabled) {
     return false;
   }
 
   try {
-    const roomCode = payload.settings.syncRoomCode || 'WED-DEFAULT';
+    if (!firestoreDb) {
+      const config = payload.settings.firebaseConfig;
+      if (!config || !config.apiKey) return false;
+      if (!getApps().length) {
+        firebaseApp = initializeApp(config);
+      } else {
+        firebaseApp = getApps()[0];
+      }
+      firestoreDb = getFirestore(firebaseApp);
+    }
+
+    const roomCode = payload.settings.syncRoomCode || 'WED-JISHNU-SWATHI';
     const docRef = doc(firestoreDb, 'wedding_rooms', roomCode);
     const data: WeddingCloudPayload = {
       ...payload,
