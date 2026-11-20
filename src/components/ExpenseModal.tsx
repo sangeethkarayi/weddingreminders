@@ -54,6 +54,8 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({
   ];
 
   useEffect(() => {
+    if (!isOpen) return;
+
     if (itemToEdit) {
       setTitle(itemToEdit.title);
       setCategory(itemToEdit.category);
@@ -79,7 +81,7 @@ export const ExpenseModal: React.FC<ExpenseModalProps> = ({
       setDueDate(defaultDue.toISOString().split('T')[0]);
       setNotes('');
     }
-  }, [itemToEdit, isOpen, settings.familyMembers]);
+  }, [isOpen, itemToEdit?.id]);
 
   if (!isOpen) return null;
 

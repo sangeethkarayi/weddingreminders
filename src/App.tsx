@@ -85,19 +85,34 @@ export function App() {
   const [lastSyncedTime, setLastSyncedTime] = useState<string>('Just now');
   const [syncErrorMessage, setSyncErrorMessage] = useState<string | null>(null);
 
+  // Unique client tab identifier to prevent echo loops
+  const tabId = React.useRef(Math.random().toString(36).substring(2, 9)).current;
+
   // Instant Multi-Tab / Multi-Window Auto-Sync via BroadcastChannel
   useEffect(() => {
     let channel: BroadcastChannel | null = null;
     try {
       channel = new BroadcastChannel('wedding_live_channel');
       channel.onmessage = (event) => {
-        const { type, data } = event.data || {};
+        const { type, data, senderId } = event.data || {};
+        if (senderId === tabId) return; // Prevent echo to sender tab
+
         if (type === 'STATE_UPDATE' && data) {
-          if (data.guests) setGuests(data.guests);
-          if (data.reminders) setReminders(data.reminders);
-          if (data.events) setEvents(data.events);
-          if (data.settings) setSettings(data.settings);
-          if (data.budget) setBudgetItems(data.budget);
+          if (data.guests) {
+            setGuests((prev) => (JSON.stringify(prev) === JSON.stringify(data.guests) ? prev : data.guests));
+          }
+          if (data.reminders) {
+            setReminders((prev) => (JSON.stringify(prev) === JSON.stringify(data.reminders) ? prev : data.reminders));
+          }
+          if (data.events) {
+            setEvents((prev) => (JSON.stringify(prev) === JSON.stringify(data.events) ? prev : data.events));
+          }
+          if (data.settings) {
+            setSettings((prev) => (JSON.stringify(prev) === JSON.stringify(data.settings) ? prev : data.settings));
+          }
+          if (data.budget) {
+            setBudgetItems((prev) => (JSON.stringify(prev) === JSON.stringify(data.budget) ? prev : data.budget));
+          }
           setSyncState('synced');
           setLastSyncedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
         }
@@ -108,7 +123,7 @@ export function App() {
     return () => {
       if (channel) channel.close();
     };
-  }, []);
+  }, [tabId]);
 
   // Save to LocalStorage on change & sync to cloud
   const pushState = useCallback((
@@ -129,6 +144,7 @@ export function App() {
       const channel = new BroadcastChannel('wedding_live_channel');
       channel.postMessage({
         type: 'STATE_UPDATE',
+        senderId: tabId,
         data: {
           guests: newGuests,
           reminders: newReminders,
@@ -160,7 +176,7 @@ export function App() {
         }
       });
     }
-  }, []);
+  }, [tabId]);
 
   // Initialize Cloud Sync Listener
   useEffect(() => {
@@ -169,24 +185,40 @@ export function App() {
       (remotePayload) => {
         if (remotePayload) {
           if (remotePayload.guests) {
-            setGuests(remotePayload.guests);
-            saveLocalGuests(remotePayload.guests);
+            setGuests((prev) => {
+              if (JSON.stringify(prev) === JSON.stringify(remotePayload.guests)) return prev;
+              saveLocalGuests(remotePayload.guests);
+              return remotePayload.guests;
+            });
           }
           if (remotePayload.reminders) {
-            setReminders(remotePayload.reminders);
-            saveLocalReminders(remotePayload.reminders);
+            setReminders((prev) => {
+              if (JSON.stringify(prev) === JSON.stringify(remotePayload.reminders)) return prev;
+              saveLocalReminders(remotePayload.reminders);
+              return remotePayload.reminders;
+            });
           }
           if (remotePayload.events) {
-            setEvents(remotePayload.events);
-            saveLocalEvents(remotePayload.events);
+            setEvents((prev) => {
+              if (JSON.stringify(prev) === JSON.stringify(remotePayload.events)) return prev;
+              saveLocalEvents(remotePayload.events);
+              return remotePayload.events;
+            });
           }
           if (remotePayload.settings) {
-            setSettings(remotePayload.settings);
-            saveLocalSettings(remotePayload.settings);
+            setSettings((prev) => {
+              if (JSON.stringify(prev) === JSON.stringify(remotePayload.settings)) return prev;
+              saveLocalSettings(remotePayload.settings);
+              return remotePayload.settings;
+            });
           }
           if (remotePayload.budget) {
-            setBudgetItems(remotePayload.budget);
-            saveLocalBudget(remotePayload.budget);
+            const remoteBudget = remotePayload.budget;
+            setBudgetItems((prev) => {
+              if (JSON.stringify(prev) === JSON.stringify(remoteBudget)) return prev;
+              saveLocalBudget(remoteBudget);
+              return remoteBudget;
+            });
           }
           setSyncState('synced');
           setLastSyncedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
@@ -217,7 +249,7 @@ export function App() {
         setSyncErrorMessage('Firestore not provisioned or permission denied');
       }
     );
-  }, [settings.cloudSyncEnabled, settings.syncRoomCode, settings.firebaseConfig]);
+  }, [settings.cloudSyncEnabled, settings.syncRoomCode, settings.firebaseConfig?.apiKey]);
 
   // Guest Handlers
   const handleSaveGuest = (guest: Guest) => {

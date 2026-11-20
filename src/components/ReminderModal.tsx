@@ -49,6 +49,8 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
   const [isSpecialReminder, setIsSpecialReminder] = useState(false);
 
   useEffect(() => {
+    if (!isOpen) return;
+
     if (reminderToEdit) {
       setTitle(reminderToEdit.title);
       setCategory(reminderToEdit.category);
@@ -81,7 +83,7 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
       setNotes('');
       setIsSpecialReminder(false);
     }
-  }, [reminderToEdit, isOpen, settings.familyMembers]);
+  }, [isOpen, reminderToEdit?.id]);
 
   if (!isOpen) return null;
 

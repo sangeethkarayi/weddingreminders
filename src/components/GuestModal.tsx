@@ -53,6 +53,8 @@ export const GuestModal: React.FC<GuestModalProps> = ({
   const [notes, setNotes] = useState('');
 
   useEffect(() => {
+    if (!isOpen) return;
+
     if (guestToEdit) {
       setName(guestToEdit.name);
       setPhone(guestToEdit.phone || '');
@@ -109,7 +111,7 @@ export const GuestModal: React.FC<GuestModalProps> = ({
       setCountWeddingDay(2);
       setNotes('');
     }
-  }, [guestToEdit, isOpen, defaultInvitedBy, defaultCategory, settings.familyMembers]);
+  }, [isOpen, guestToEdit?.id]);
 
   if (!isOpen) return null;
 
