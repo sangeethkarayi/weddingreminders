@@ -1,4 +1,4 @@
-import { Guest, WeddingReminder, WeddingEvent, WeddingSettings } from '../types/wedding';
+import { Guest, WeddingReminder, WeddingEvent, WeddingSettings, BudgetItem } from '../types/wedding';
 
 // Wedding Date: Dec 20, 2026 at Wedding Hall
 // Pre-wedding Function: Dec 19, 2026 at Bride's Home
@@ -15,6 +15,7 @@ export const initialSettings: WeddingSettings = {
   nightBeforeVenue: "Bride's Home (19 Dec Function)",
   nightBeforeMapUrl: 'https://maps.app.goo.gl/kuf1hXdppVXVykks9',
   currencySymbol: '₹',
+  targetBudget: 1500000,
   familyMembers: [
     'Ramachandran (Father)',
     'Jishnu (Groom)',
@@ -197,6 +198,292 @@ export const initialReminders: WeddingReminder[] = [
     vendorPhone: '+91 93322 11009',
     notes: 'Rooms booked for outstation relatives.',
     isSpecialReminder: false,
+    updatedAt: new Date().toISOString()
+  }
+];
+
+export const initialBudgetItems: BudgetItem[] = [
+  {
+    id: 'bgt-1',
+    title: 'Wedding Gold Chain / Mangalsutra & Rings',
+    category: 'jewelry',
+    estimatedCost: 120000,
+    actualCost: 115000,
+    paidAmount: 45000,
+    paidBy: 'Ramachandran (Father)',
+    vendorName: 'Kalyan Jewellers / Local Goldsmith',
+    vendorPhone: '+91 98765 43210',
+    dueDate: '2026-11-25',
+    paymentStatus: 'partial',
+    payments: [
+      { id: 'p-1', amount: 45000, date: '2026-11-10', paymentMethod: 'Bank Transfer', notes: 'Booking advance & gold rate lock' }
+    ],
+    notes: '916 BIS Hallmark certified. Balance ₹70,000 due at delivery on 25 Nov.',
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'bgt-2',
+    title: 'Bridal Gold Bangle & Traditional Jewelry Set',
+    category: 'jewelry',
+    estimatedCost: 250000,
+    actualCost: 240000,
+    paidAmount: 100000,
+    paidBy: 'Ramachandran (Father)',
+    vendorName: 'Bhima Jewellers',
+    vendorPhone: '+91 98450 11223',
+    dueDate: '2026-11-28',
+    paymentStatus: 'partial',
+    payments: [
+      { id: 'p-2', amount: 100000, date: '2026-11-12', paymentMethod: 'Bank Transfer', notes: 'Advance payment' }
+    ],
+    notes: 'Balance ₹140,000 due at final collection.',
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'bgt-3',
+    title: 'Wedding Day Grand Sadya Feast (1,400+ Guests)',
+    category: 'catering',
+    estimatedCost: 350000,
+    actualCost: 360000,
+    paidAmount: 120000,
+    paidBy: 'Ramachandran (Father)',
+    vendorName: 'Royal Feast Caterers',
+    vendorPhone: '+91 99887 76655',
+    dueDate: '2026-12-14',
+    paymentStatus: 'partial',
+    payments: [
+      { id: 'p-3', amount: 120000, date: '2026-11-05', paymentMethod: 'UPI / GPay', notes: 'Catering booking token advance' }
+    ],
+    notes: 'Traditional 24-item Kerala Sadya with 2 payasams. Balance split: ₹120,000 on 14 Dec, ₹120,000 wedding evening.',
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'bgt-4',
+    title: "19 Dec Pre-Wedding Celebration Dinner (Bride's Home)",
+    category: 'catering',
+    estimatedCost: 90000,
+    actualCost: 85000,
+    paidAmount: 35000,
+    paidBy: 'Ramachandran (Father)',
+    vendorName: 'Royal Feast Caterers',
+    vendorPhone: '+91 99887 76655',
+    dueDate: '2026-12-16',
+    paymentStatus: 'partial',
+    payments: [
+      { id: 'p-4', amount: 35000, date: '2026-11-05', paymentMethod: 'UPI / GPay', notes: 'Pre-wedding catering advance' }
+    ],
+    notes: "Dinner buffet for close family and relatives at Bride's Home.",
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'bgt-5',
+    title: 'Welcome Drinks, Fresh Fruit Juices & Tea/Snacks Counter',
+    category: 'catering',
+    estimatedCost: 30000,
+    actualCost: 28000,
+    paidAmount: 28000,
+    paidBy: 'Jishnu (Groom)',
+    vendorName: 'Green Refreshments',
+    vendorPhone: '+91 97891 00223',
+    paymentStatus: 'paid',
+    payments: [
+      { id: 'p-5', amount: 28000, date: '2026-11-15', paymentMethod: 'UPI / GPay', notes: 'Fully paid in advance' }
+    ],
+    notes: 'Tender coconut & live snack counter at Wedding Hall entrance.',
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'bgt-6',
+    title: 'Wedding Convention Hall Rent & Facilities (20 Dec)',
+    category: 'venue',
+    estimatedCost: 180000,
+    actualCost: 175000,
+    paidAmount: 75000,
+    paidBy: 'Ramachandran (Father)',
+    vendorName: 'Convention Hall Management',
+    vendorPhone: '+91 94455 98765',
+    dueDate: '2026-12-01',
+    paymentStatus: 'partial',
+    payments: [
+      { id: 'p-6', amount: 75000, date: '2026-10-20', paymentMethod: 'Bank Transfer', notes: 'Hall booking token' }
+    ],
+    notes: 'Includes main AC mandap hall, dining hall, generator and 4 VIP rooms. Balance ₹100,000 due Dec 1.',
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'bgt-7',
+    title: "Shamiana, Stage Canopy & Lighting for 19 Dec (Bride's Home)",
+    category: 'venue',
+    estimatedCost: 35000,
+    actualCost: 32000,
+    paidAmount: 15000,
+    paidBy: 'Ramachandran (Father)',
+    vendorName: 'Star Pandal & Lightings',
+    vendorPhone: '+91 94471 22334',
+    dueDate: '2026-12-15',
+    paymentStatus: 'partial',
+    payments: [
+      { id: 'p-7', amount: 15000, date: '2026-11-14', paymentMethod: 'Cash', notes: 'Pandal setup advance' }
+    ],
+    notes: "Weather-proof canopy, festive garden illumination at Bride's Home.",
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'bgt-8',
+    title: 'Camera & Cinematography Crew (Photo, Video & Drone)',
+    category: 'photography',
+    estimatedCost: 80000,
+    actualCost: 75000,
+    paidAmount: 25000,
+    paidBy: 'Jishnu (Groom)',
+    vendorName: 'Studio Memories (Cinematographer Arun)',
+    vendorPhone: '+91 91234 56789',
+    dueDate: '2026-12-05',
+    paymentStatus: 'partial',
+    payments: [
+      { id: 'p-8', amount: 25000, date: '2026-11-08', paymentMethod: 'UPI / GPay', notes: 'Photography crew booking' }
+    ],
+    notes: 'Includes 2 traditional video cameras, 1 candid photographer, 1 drone operator and 2 leather albums.',
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'bgt-9',
+    title: 'Bridal Kanchipuram Silk Sarees & Tailoring',
+    category: 'attire',
+    estimatedCost: 65000,
+    actualCost: 60000,
+    paidAmount: 60000,
+    paidBy: 'Swathi (Bride)',
+    vendorName: 'Heritage Silks & Designer Boutique',
+    vendorPhone: '+91 98451 23456',
+    paymentStatus: 'paid',
+    payments: [
+      { id: 'p-9', amount: 60000, date: '2026-11-02', paymentMethod: 'Card', notes: 'Fully paid on purchase' }
+    ],
+    notes: 'Muhurtham pure zari silk saree and reception designer saree.',
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'bgt-10',
+    title: "Groom's Suit, Sherwani & Silk Mundu Set",
+    category: 'attire',
+    estimatedCost: 30000,
+    actualCost: 28000,
+    paidAmount: 28000,
+    paidBy: 'Jishnu (Groom)',
+    vendorName: 'Raymond Custom Tailoring',
+    vendorPhone: '+91 98200 44556',
+    paymentStatus: 'paid',
+    payments: [
+      { id: 'p-10', amount: 28000, date: '2026-11-04', paymentMethod: 'Card', notes: 'Fully paid' }
+    ],
+    notes: 'Custom stitched 3-piece suit and traditional kasavu mundu.',
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'bgt-11',
+    title: 'Mandap Floral Backdrop, Pathway Arch & Stage Decor',
+    category: 'decoration',
+    estimatedCost: 95000,
+    actualCost: 90000,
+    paidAmount: 40000,
+    paidBy: 'Ramachandran (Father)',
+    vendorName: 'Dream Floral Decorators',
+    vendorPhone: '+91 98989 12345',
+    dueDate: '2026-12-10',
+    paymentStatus: 'partial',
+    payments: [
+      { id: 'p-11', amount: 40000, date: '2026-11-10', paymentMethod: 'UPI / GPay', notes: 'Decor design confirmation advance' }
+    ],
+    notes: 'Exotic fresh flower mandap with marigold and lotus theme. Balance ₹50,000 on completion.',
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'bgt-12',
+    title: 'Bridal Makeup, Hairstyling & Mehendi Artist',
+    category: 'makeup',
+    estimatedCost: 28000,
+    actualCost: 25000,
+    paidAmount: 10000,
+    paidBy: 'Swathi (Bride)',
+    vendorName: 'Glow Bridal Artistry (Priya)',
+    vendorPhone: '+91 97766 55443',
+    dueDate: '2026-12-19',
+    paymentStatus: 'partial',
+    payments: [
+      { id: 'p-12', amount: 10000, date: '2026-11-12', paymentMethod: 'UPI / GPay', notes: 'Artist dates booking' }
+    ],
+    notes: "Mehendi on 19 Dec at Bride's Home; Bridal makeup on 20 Dec morning at hall.",
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'bgt-13',
+    title: 'Fresh Jasmine Varmala Garlands & Pooja Samagri',
+    category: 'ritual',
+    estimatedCost: 15000,
+    actualCost: 14000,
+    paidAmount: 5000,
+    paidBy: 'Ramachandran (Father)',
+    vendorName: 'Fresh Bloom Florist & Pooja Store',
+    vendorPhone: '+91 94433 22110',
+    dueDate: '2026-12-19',
+    paymentStatus: 'partial',
+    payments: [
+      { id: 'p-13', amount: 5000, date: '2026-11-15', paymentMethod: 'Cash', notes: 'Samagri & flower booking' }
+    ],
+    notes: 'Rose petal & fresh jasmine garlands for Muhurtham exchange.',
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'bgt-14',
+    title: 'Nadaswaram & Chenda Melam Traditional Musicians',
+    category: 'music',
+    estimatedCost: 25000,
+    actualCost: 22000,
+    paidAmount: 10000,
+    paidBy: 'Ramachandran (Father)',
+    vendorName: 'Kala Nilayam Troupe',
+    vendorPhone: '+91 94460 77889',
+    dueDate: '2026-12-18',
+    paymentStatus: 'partial',
+    payments: [
+      { id: 'p-14', amount: 10000, date: '2026-11-10', paymentMethod: 'Cash', notes: 'Musicians advance' }
+    ],
+    notes: 'Auspicious nadaswaram during Muhurtham and Chenda Melam during groom procession.',
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'bgt-15',
+    title: 'Printed Wedding Cards, Packaging & Envelopes',
+    category: 'invitation',
+    estimatedCost: 30000,
+    actualCost: 26000,
+    paidAmount: 26000,
+    paidBy: 'Ramachandran (Father)',
+    vendorName: 'Royal Print Press',
+    vendorPhone: '+91 98400 99887',
+    paymentStatus: 'paid',
+    payments: [
+      { id: 'p-15', amount: 26000, date: '2026-10-25', paymentMethod: 'UPI / GPay', notes: 'Fully paid upon card delivery' }
+    ],
+    notes: '500 gold-embossed invitation cards with sweets boxes.',
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'bgt-16',
+    title: 'Cars & Transport for Outstation Family & Relatives',
+    category: 'transport',
+    estimatedCost: 40000,
+    actualCost: 35000,
+    paidAmount: 35000,
+    paidBy: 'Ramachandran (Father)',
+    vendorName: 'City Cabs & Tour Travels',
+    vendorPhone: '+91 93322 11009',
+    paymentStatus: 'paid',
+    payments: [
+      { id: 'p-16', amount: 35000, date: '2026-11-14', paymentMethod: 'Bank Transfer', notes: 'Full advance for vehicles' }
+    ],
+    notes: '2 Innova Crystas and 1 20-seater Tempo Traveler for 19th & 20th.',
     updatedAt: new Date().toISOString()
   }
 ];

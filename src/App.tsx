@@ -4,9 +4,13 @@ import {
   getLocalGuests, saveLocalGuests,
   getLocalReminders, saveLocalReminders,
   getLocalEvents, saveLocalEvents,
+  getLocalBudget, saveLocalBudget,
   initCloudSync, syncToCloud, exportGuestsToCSV
 } from './services/storage';
-import { Guest, WeddingReminder, WeddingEvent, WeddingSettings, RSVPStatus, ReminderStatus } from './types/wedding';
+import { 
+  Guest, WeddingReminder, WeddingEvent, WeddingSettings, 
+  RSVPStatus, ReminderStatus, BudgetItem, PaymentRecord 
+} from './types/wedding';
 import { Header } from './components/Header';
 import { CountdownTimer } from './components/CountdownTimer';
 import { HeadcountSummary } from './components/HeadcountSummary';
@@ -15,6 +19,9 @@ import { GuestModal } from './components/GuestModal';
 import { RemindersManager } from './components/RemindersManager';
 import { ReminderModal } from './components/ReminderModal';
 import { TimelineEvents } from './components/TimelineEvents';
+import { BudgetTracker } from './components/BudgetTracker';
+import { ExpenseModal } from './components/ExpenseModal';
+import { PaymentModal } from './components/PaymentModal';
 import { SettingsModal } from './components/SettingsModal';
 import { CloudSyncModal } from './components/CloudSyncModal';
 import confetti from 'canvas-confetti';
@@ -24,19 +31,28 @@ export function App() {
   const [guests, setGuests] = useState<Guest[]>(getLocalGuests);
   const [reminders, setReminders] = useState<WeddingReminder[]>(getLocalReminders);
   const [events, setEvents] = useState<WeddingEvent[]>(getLocalEvents);
+  const [budgetItems, setBudgetItems] = useState<BudgetItem[]>(getLocalBudget);
 
-  const [activeTab, setActiveTab] = useState<'guests' | 'reminders' | 'timeline'>('guests');
+  const [activeTab, setActiveTab] = useState<'guests' | 'reminders' | 'timeline' | 'budget'>('guests');
   const [selectedInviterFilter, setSelectedInviterFilter] = useState<string | undefined>(undefined);
 
-  // Modals
+  // Guest Modals
   const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
   const [guestToEdit, setGuestToEdit] = useState<Guest | null>(null);
   const [modalDefaultInvitedBy, setModalDefaultInvitedBy] = useState<string | undefined>(undefined);
   const [modalDefaultCategory, setModalDefaultCategory] = useState<string | undefined>(undefined);
 
+  // Reminder Modals
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
   const [reminderToEdit, setReminderToEdit] = useState<WeddingReminder | null>(null);
 
+  // Budget Modals
+  const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+  const [expenseToEdit, setExpenseToEdit] = useState<BudgetItem | null>(null);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [itemForPayment, setItemForPayment] = useState<BudgetItem | null>(null);
+
+  // Settings & Cloud Modals
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCloudSyncOpen, setIsCloudSyncOpen] = useState(false);
 
@@ -45,12 +61,14 @@ export function App() {
     newGuests: Guest[],
     newReminders: WeddingReminder[],
     newEvents: WeddingEvent[],
-    newSettings: WeddingSettings
+    newSettings: WeddingSettings,
+    newBudget: BudgetItem[]
   ) => {
     saveLocalGuests(newGuests);
     saveLocalReminders(newReminders);
     saveLocalEvents(newEvents);
     saveLocalSettings(newSettings);
+    saveLocalBudget(newBudget);
 
     if (newSettings.cloudSyncEnabled) {
       syncToCloud({
@@ -82,6 +100,10 @@ export function App() {
           setSettings(remotePayload.settings);
           saveLocalSettings(remotePayload.settings);
         }
+        if (remotePayload.budget) {
+          setBudgetItems(remotePayload.budget);
+          saveLocalBudget(remotePayload.budget);
+        }
       }
     });
   }, [settings.cloudSyncEnabled, settings.syncRoomCode, settings.firebaseConfig]);
@@ -94,17 +116,16 @@ export function App() {
       updated = guests.map(g => (g.id === guest.id ? guest : g));
     } else {
       updated = [guest, ...guests];
-      // Celebrate new guest entry
       confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 } });
     }
     setGuests(updated);
-    pushState(updated, reminders, events, settings);
+    pushState(updated, reminders, events, settings, budgetItems);
   };
 
   const handleDeleteGuest = (id: string) => {
     const updated = guests.filter(g => g.id !== id);
     setGuests(updated);
-    pushState(updated, reminders, events, settings);
+    pushState(updated, reminders, events, settings, budgetItems);
   };
 
   const handleUpdateRsvp = (id: string, eventType: 'night_before' | 'wedding_day', rsvp: RSVPStatus, count?: number) => {
@@ -132,7 +153,7 @@ export function App() {
     }
 
     setGuests(updated);
-    pushState(updated, reminders, events, settings);
+    pushState(updated, reminders, events, settings, budgetItems);
   };
 
   // Reminder Handlers
@@ -145,13 +166,13 @@ export function App() {
       updated = [reminder, ...reminders];
     }
     setReminders(updated);
-    pushState(guests, updated, events, settings);
+    pushState(guests, updated, events, settings, budgetItems);
   };
 
   const handleDeleteReminder = (id: string) => {
     const updated = reminders.filter(r => r.id !== id);
     setReminders(updated);
-    pushState(guests, updated, events, settings);
+    pushState(guests, updated, events, settings, budgetItems);
   };
 
   const handleToggleReminderStatus = (id: string, currentStatus: ReminderStatus) => {
@@ -163,7 +184,7 @@ export function App() {
       return r;
     });
     setReminders(updated);
-    pushState(guests, updated, events, settings);
+    pushState(guests, updated, events, settings, budgetItems);
   };
 
   // Event Handlers
@@ -176,19 +197,75 @@ export function App() {
       updated = [...events, evt];
     }
     setEvents(updated);
-    pushState(guests, reminders, updated, settings);
+    pushState(guests, reminders, updated, settings, budgetItems);
   };
 
   const handleDeleteEvent = (id: string) => {
     const updated = events.filter(e => e.id !== id);
     setEvents(updated);
-    pushState(guests, reminders, updated, settings);
+    pushState(guests, reminders, updated, settings, budgetItems);
+  };
+
+  // Budget Handlers
+  const handleSaveExpense = (item: BudgetItem) => {
+    let updated: BudgetItem[];
+    const exists = budgetItems.some(b => b.id === item.id);
+    if (exists) {
+      updated = budgetItems.map(b => (b.id === item.id ? item : b));
+    } else {
+      updated = [item, ...budgetItems];
+      confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 } });
+    }
+    setBudgetItems(updated);
+    pushState(guests, reminders, events, settings, updated);
+  };
+
+  const handleDeleteExpense = (id: string) => {
+    const updated = budgetItems.filter(b => b.id !== id);
+    setBudgetItems(updated);
+    pushState(guests, reminders, events, settings, updated);
+  };
+
+  const handleRecordPayment = (itemId: string, payment: PaymentRecord) => {
+    const updated = budgetItems.map(item => {
+      if (item.id !== itemId) return item;
+
+      const newPaid = item.paidAmount + payment.amount;
+      const newPayments = [...(item.payments || []), payment];
+      const newStatus: 'paid' | 'partial' | 'unpaid' = newPaid >= item.actualCost ? 'paid' : 'partial';
+
+      if (newStatus === 'paid') {
+        confetti({
+          particleCount: 50,
+          spread: 70,
+          origin: { y: 0.7 },
+          colors: ['#10b981', '#34d399', '#059669']
+        });
+      }
+
+      return {
+        ...item,
+        paidAmount: newPaid,
+        paymentStatus: newStatus,
+        payments: newPayments,
+        updatedAt: new Date().toISOString(),
+      };
+    });
+
+    setBudgetItems(updated);
+    pushState(guests, reminders, events, settings, updated);
+  };
+
+  const handleUpdateTargetBudget = (target: number) => {
+    const newSettings = { ...settings, targetBudget: target };
+    setSettings(newSettings);
+    pushState(guests, reminders, events, newSettings, budgetItems);
   };
 
   // Settings Handlers
   const handleSaveSettings = (newSettings: WeddingSettings) => {
     setSettings(newSettings);
-    pushState(guests, reminders, events, newSettings);
+    pushState(guests, reminders, events, newSettings, budgetItems);
   };
 
   // Cloud Manual Sync
@@ -207,11 +284,13 @@ export function App() {
     if (payload.reminders) setReminders(payload.reminders);
     if (payload.events) setEvents(payload.events);
     if (payload.settings) setSettings(payload.settings);
+    if (payload.budget) setBudgetItems(payload.budget);
     pushState(
       payload.guests || guests,
       payload.reminders || reminders,
       payload.events || events,
-      payload.settings || settings
+      payload.settings || settings,
+      payload.budget || budgetItems
     );
   };
 
@@ -227,6 +306,7 @@ export function App() {
         onExportCSV={() => exportGuestsToCSV(guests, settings)}
         guestCount={guests.length}
         reminderCount={reminders.length}
+        budgetCount={budgetItems.length}
       />
 
       {/* Main Content Area */}
@@ -249,7 +329,7 @@ export function App() {
               }}
             />
 
-            {/* Comprehensive Guest List */}
+            {/* Comprehensive Hierarchical Guest List */}
             <GuestList
               guests={guests}
               settings={settings}
@@ -271,7 +351,31 @@ export function App() {
           </div>
         )}
 
-        {/* Tab 2: Special Reminders & Payments */}
+        {/* Tab 2: Budget Tracker */}
+        {activeTab === 'budget' && (
+          <div className="animate-in fade-in duration-200">
+            <BudgetTracker
+              budgetItems={budgetItems}
+              settings={settings}
+              onAddExpense={() => {
+                setExpenseToEdit(null);
+                setIsExpenseModalOpen(true);
+              }}
+              onEditExpense={(item) => {
+                setExpenseToEdit(item);
+                setIsExpenseModalOpen(true);
+              }}
+              onDeleteExpense={handleDeleteExpense}
+              onOpenPaymentModal={(item) => {
+                setItemForPayment(item);
+                setIsPaymentModalOpen(true);
+              }}
+              onUpdateTargetBudget={handleUpdateTargetBudget}
+            />
+          </div>
+        )}
+
+        {/* Tab 3: Special Reminders & Payments */}
         {activeTab === 'reminders' && (
           <div className="animate-in fade-in duration-200">
             <RemindersManager
@@ -291,7 +395,7 @@ export function App() {
           </div>
         )}
 
-        {/* Tab 3: Timeline & Ceremonies */}
+        {/* Tab 4: Timeline & Ceremonies */}
         {activeTab === 'timeline' && (
           <div className="animate-in fade-in duration-200">
             <TimelineEvents
@@ -308,7 +412,7 @@ export function App() {
       {/* Footer */}
       <footer className="mt-auto py-6 border-t border-slate-200 bg-white/60 text-center text-xs text-slate-500">
         <p className="font-playfair font-semibold text-slate-700">
-          {settings.groomName} & {settings.brideName}'s Wedding Day Reminders & Guest Planner
+          {settings.groomName} & {settings.brideName}'s Wedding Day Reminders, Budget & Guest Planner
         </p>
         <p className="mt-1 text-slate-400">
           Offline-ready & Cloud Sync enabled for family collaboration • Designed with ❤️
@@ -329,6 +433,28 @@ export function App() {
         settings={settings}
         defaultInvitedBy={modalDefaultInvitedBy || selectedInviterFilter}
         defaultCategory={modalDefaultCategory}
+      />
+
+      <ExpenseModal
+        isOpen={isExpenseModalOpen}
+        onClose={() => {
+          setIsExpenseModalOpen(false);
+          setExpenseToEdit(null);
+        }}
+        onSave={handleSaveExpense}
+        itemToEdit={expenseToEdit}
+        settings={settings}
+      />
+
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => {
+          setIsPaymentModalOpen(false);
+          setItemForPayment(null);
+        }}
+        budgetItem={itemForPayment}
+        onRecordPayment={handleRecordPayment}
+        settings={settings}
       />
 
       <ReminderModal
@@ -355,7 +481,7 @@ export function App() {
         settings={settings}
         onSaveSettings={handleSaveSettings}
         onManualSync={handleManualSync}
-        fullPayload={{ settings, guests, reminders, events }}
+        fullPayload={{ settings, guests, reminders, events, budget: budgetItems }}
         onRestoreBackup={handleRestoreBackup}
       />
     </div>

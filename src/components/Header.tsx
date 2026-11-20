@@ -1,16 +1,17 @@
 import React from 'react';
-import { Sparkles, Cloud, Settings, FileSpreadsheet, Users, Bell, Calendar, RefreshCw } from 'lucide-react';
+import { Sparkles, Cloud, Settings, FileSpreadsheet, Users, Bell, Calendar, DollarSign } from 'lucide-react';
 import { WeddingSettings } from '../types/wedding';
 
 interface HeaderProps {
   settings: WeddingSettings;
-  activeTab: 'guests' | 'reminders' | 'timeline';
-  setActiveTab: (tab: 'guests' | 'reminders' | 'timeline') => void;
+  activeTab: 'guests' | 'reminders' | 'timeline' | 'budget';
+  setActiveTab: (tab: 'guests' | 'reminders' | 'timeline' | 'budget') => void;
   onOpenSettings: () => void;
   onOpenCloudSync: () => void;
   onExportCSV: () => void;
   guestCount: number;
   reminderCount: number;
+  budgetCount?: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -22,6 +23,7 @@ export const Header: React.FC<HeaderProps> = ({
   onExportCSV,
   guestCount,
   reminderCount,
+  budgetCount,
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-rose-100 shadow-xs">
@@ -52,7 +54,7 @@ export const Header: React.FC<HeaderProps> = ({
           <nav className="hidden md:flex items-center gap-1.5 p-1 bg-slate-100/80 rounded-2xl border border-slate-200/80 text-xs font-semibold">
             <button
               onClick={() => setActiveTab('guests')}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${
+              className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all ${
                 activeTab === 'guests'
                   ? 'bg-white text-rose-700 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
@@ -66,8 +68,25 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             <button
+              onClick={() => setActiveTab('budget')}
+              className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all ${
+                activeTab === 'budget'
+                  ? 'bg-white text-emerald-700 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <DollarSign className="w-3.5 h-3.5" />
+              <span>Budget Tracker</span>
+              {budgetCount !== undefined && (
+                <span className="px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 text-[10px]">
+                  {budgetCount}
+                </span>
+              )}
+            </button>
+
+            <button
               onClick={() => setActiveTab('reminders')}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${
+              className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all ${
                 activeTab === 'reminders'
                   ? 'bg-white text-amber-700 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
@@ -82,14 +101,14 @@ export const Header: React.FC<HeaderProps> = ({
 
             <button
               onClick={() => setActiveTab('timeline')}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${
+              className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl transition-all ${
                 activeTab === 'timeline'
                   ? 'bg-white text-indigo-700 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <Calendar className="w-3.5 h-3.5" />
-              <span>Program & Timeline</span>
+              <span>Timeline</span>
             </button>
           </nav>
 
@@ -134,10 +153,10 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Mobile Bottom Navigation Bar (Phone-friendly) */}
-      <div className="md:hidden border-t border-rose-100 bg-white px-3 py-2 flex items-center justify-around text-xs font-semibold">
+      <div className="md:hidden border-t border-rose-100 bg-white px-2 py-2 flex items-center justify-around text-xs font-semibold">
         <button
           onClick={() => setActiveTab('guests')}
-          className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl transition-all ${
+          className={`flex flex-col items-center gap-1 px-2.5 py-1 rounded-xl transition-all ${
             activeTab === 'guests' ? 'text-rose-600' : 'text-slate-500'
           }`}
         >
@@ -146,18 +165,28 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         <button
+          onClick={() => setActiveTab('budget')}
+          className={`flex flex-col items-center gap-1 px-2.5 py-1 rounded-xl transition-all ${
+            activeTab === 'budget' ? 'text-emerald-600' : 'text-slate-500'
+          }`}
+        >
+          <DollarSign className="w-4 h-4" />
+          <span>Budget</span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('reminders')}
-          className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl transition-all ${
+          className={`flex flex-col items-center gap-1 px-2.5 py-1 rounded-xl transition-all ${
             activeTab === 'reminders' ? 'text-amber-600' : 'text-slate-500'
           }`}
         >
           <Bell className="w-4 h-4" />
-          <span>Reminders ({reminderCount})</span>
+          <span>Reminders</span>
         </button>
 
         <button
           onClick={() => setActiveTab('timeline')}
-          className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl transition-all ${
+          className={`flex flex-col items-center gap-1 px-2.5 py-1 rounded-xl transition-all ${
             activeTab === 'timeline' ? 'text-indigo-600' : 'text-slate-500'
           }`}
         >

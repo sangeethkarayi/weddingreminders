@@ -10,19 +10,60 @@ export type ReminderCategory =
   | 'venue' 
   | 'ritual' 
   | 'transport' 
-  | 'makeup'
-  | 'music'
-  | 'payment'
+  | 'makeup' 
+  | 'music' 
+  | 'payment' 
   | 'other';
+
+export type ExpenseCategory =
+  | 'jewelry'
+  | 'catering'
+  | 'photography'
+  | 'venue'
+  | 'attire'
+  | 'decoration'
+  | 'makeup'
+  | 'ritual'
+  | 'transport'
+  | 'music'
+  | 'invitation'
+  | 'other';
+
+export type PaymentMethod = 'UPI / GPay' | 'Bank Transfer' | 'Cash' | 'Cheque' | 'Card';
+
+export interface PaymentRecord {
+  id: string;
+  amount: number;
+  date: string; // YYYY-MM-DD
+  paymentMethod: PaymentMethod;
+  notes?: string;
+}
+
+export interface BudgetItem {
+  id: string;
+  title: string;
+  category: ExpenseCategory;
+  estimatedCost: number;
+  actualCost: number;
+  paidAmount: number;
+  paidBy: string; // e.g. "Ramachandran (Father)", "Jishnu (Groom)", "Swathi (Bride)", "Shared"
+  vendorName?: string;
+  vendorPhone?: string;
+  dueDate?: string; // YYYY-MM-DD
+  paymentStatus: 'paid' | 'partial' | 'unpaid';
+  payments?: PaymentRecord[];
+  notes?: string;
+  updatedAt: string;
+}
 
 export interface Guest {
   id: string;
   name: string;
   phone: string;
-  relationship: string; // e.g. "Relative", "Close Friend", "Colleague", "Neighbor"
+  relationship: string;
   side: 'groom' | 'bride' | 'mutual';
-  invitedBy: string; // Main Relative / Head (e.g. "Father", "Mother", "Jishnu (Groom)", "Swathi (Bride)", "Brother")
-  category: string; // Sub-Category inside the Head (e.g. "Friends", "Coworkers", "Relatives", "Neighbors", "VIPs")
+  invitedBy: string; // Main Relative / Head (e.g. "Ramachandran (Father)", "SureshKarayi", "Ammamma", "Achamma", "Babu", "Neighbours", etc.)
+  category: string; // Sub-Category inside the Head (e.g. "Friends", "Coworkers", "Relatives", "Neighbours")
   invitationSent: boolean;
   
   // 19 Dec Event (Bride's Home Function)
@@ -89,6 +130,7 @@ export interface WeddingSettings {
   nightBeforeVenue: string;
   nightBeforeMapUrl: string; // e.g. https://maps.app.goo.gl/kuf1hXdppVXVykks9
   currencySymbol: string;
+  targetBudget?: number; // Total overall planned budget e.g. 1500000
   familyMembers: string[];
   firebaseConfig?: FirebaseSyncConfig;
   cloudSyncEnabled: boolean;
