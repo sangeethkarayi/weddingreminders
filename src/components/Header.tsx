@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Cloud, Settings, FileSpreadsheet, Users, Bell, Calendar, DollarSign, Lock } from 'lucide-react';
+import { Sparkles, Cloud, Settings, FileSpreadsheet, Users, Bell, Calendar, DollarSign, Lock, RefreshCw, AlertTriangle } from 'lucide-react';
 import { WeddingSettings } from '../types/wedding';
 
 interface HeaderProps {
@@ -13,6 +13,9 @@ interface HeaderProps {
   guestCount: number;
   reminderCount: number;
   budgetCount?: number;
+  syncState?: 'synced' | 'syncing' | 'error' | 'idle';
+  lastSyncedTime?: string;
+  syncErrorMessage?: string | null;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -26,6 +29,9 @@ export const Header: React.FC<HeaderProps> = ({
   guestCount,
   reminderCount,
   budgetCount,
+  syncState = 'synced',
+  lastSyncedTime,
+  syncErrorMessage,
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-rose-100 shadow-xs">
@@ -116,19 +122,41 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Right Action Icons */}
           <div className="flex items-center gap-2">
-            {/* Cloud Sync Status Button */}
+            {/* Live Auto-Sync Status Button */}
             <button
               onClick={onOpenCloudSync}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
-                settings.cloudSyncEnabled
+                syncState === 'syncing'
+                  ? 'bg-amber-50 text-amber-800 border-amber-300 shadow-xs'
+                  : syncState === 'error'
+                  ? 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100'
+                  : settings.cloudSyncEnabled
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
                   : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
               }`}
-              title="Cloud Sync & Family Collaboration"
+              title={
+                syncState === 'syncing'
+                  ? 'Auto-syncing changes to cloud...'
+                  : syncState === 'error'
+                  ? `Sync Alert: ${syncErrorMessage || 'Check Firebase Firestore setup'}`
+                  : 'Real-Time Auto Sync Active'
+              }
             >
-              <Cloud className={`w-3.5 h-3.5 ${settings.cloudSyncEnabled ? 'text-emerald-600' : 'text-slate-400'}`} />
+              {syncState === 'syncing' ? (
+                <RefreshCw className="w-3.5 h-3.5 text-amber-600 animate-spin" />
+              ) : syncState === 'error' ? (
+                <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+              ) : (
+                <Cloud className={`w-3.5 h-3.5 ${settings.cloudSyncEnabled ? 'text-emerald-600' : 'text-slate-400'}`} />
+              )}
               <span className="hidden sm:inline">
-                {settings.cloudSyncEnabled ? 'Cloud Synced' : 'Sync Room'}
+                {syncState === 'syncing'
+                  ? 'Auto-Syncing...'
+                  : syncState === 'error'
+                  ? 'Sync Alert'
+                  : settings.cloudSyncEnabled
+                  ? (lastSyncedTime ? `Auto-Synced (${lastSyncedTime})` : 'Auto-Synced')
+                  : 'Sync Room'}
               </span>
             </button>
 

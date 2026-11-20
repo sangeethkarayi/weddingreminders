@@ -136,7 +136,8 @@ export interface WeddingCloudPayload {
 export const initCloudSync = (
   settings: WeddingSettings,
   onRemoteUpdate: (payload: WeddingCloudPayload) => void,
-  onRemoteEmpty?: () => void
+  onRemoteEmpty?: () => void,
+  onError?: (error: any) => void
 ): boolean => {
   if (unsubscribeFirestore) {
     unsubscribeFirestore();
@@ -172,11 +173,13 @@ export const initCloudSync = (
       }
     }, (error) => {
       console.warn('Firestore subscription error (check credentials or security rules):', error);
+      if (onError) onError(error);
     });
 
     return true;
   } catch (error) {
     console.error('Failed to initialize Firebase Sync:', error);
+    if (onError) onError(error);
     return false;
   }
 };
@@ -189,15 +192,15 @@ export const syncToCloud = async (
     events: WeddingEvent[];
     budget?: BudgetItem[];
   }
-): Promise<boolean> => {
+): Promise<{ success: boolean; error?: string }> => {
   if (!payload.settings.cloudSyncEnabled) {
-    return false;
+    return { success: false, error: 'Cloud sync disabled' };
   }
 
   try {
     if (!firestoreDb) {
       const config = payload.settings.firebaseConfig;
-      if (!config || !config.apiKey) return false;
+      if (!config || !config.apiKey) return { success: false, error: 'Missing Firebase config' };
       if (!getApps().length) {
         firebaseApp = initializeApp(config);
       } else {
@@ -213,10 +216,10 @@ export const syncToCloud = async (
       lastSyncedAt: new Date().toISOString()
     };
     await setDoc(docRef, data, { merge: true });
-    return true;
-  } catch (error) {
+    return { success: true };
+  } catch (error: any) {
     console.error('Failed pushing update to Firebase:', error);
-    return false;
+    return { success: false, error: error?.message || 'Permission denied or Firestore service not provisioned' };
   }
 };
 

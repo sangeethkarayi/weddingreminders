@@ -80,6 +80,36 @@ export function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCloudSyncOpen, setIsCloudSyncOpen] = useState(false);
 
+  // Live Auto-Sync Status
+  const [syncState, setSyncState] = useState<'synced' | 'syncing' | 'error' | 'idle'>('synced');
+  const [lastSyncedTime, setLastSyncedTime] = useState<string>('Just now');
+  const [syncErrorMessage, setSyncErrorMessage] = useState<string | null>(null);
+
+  // Instant Multi-Tab / Multi-Window Auto-Sync via BroadcastChannel
+  useEffect(() => {
+    let channel: BroadcastChannel | null = null;
+    try {
+      channel = new BroadcastChannel('wedding_live_channel');
+      channel.onmessage = (event) => {
+        const { type, data } = event.data || {};
+        if (type === 'STATE_UPDATE' && data) {
+          if (data.guests) setGuests(data.guests);
+          if (data.reminders) setReminders(data.reminders);
+          if (data.events) setEvents(data.events);
+          if (data.settings) setSettings(data.settings);
+          if (data.budget) setBudgetItems(data.budget);
+          setSyncState('synced');
+          setLastSyncedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+        }
+      };
+    } catch (e) {
+      // Ignore if unsupported
+    }
+    return () => {
+      if (channel) channel.close();
+    };
+  }, []);
+
   // Save to LocalStorage on change & sync to cloud
   const pushState = useCallback((
     newGuests: Guest[],
@@ -94,13 +124,40 @@ export function App() {
     saveLocalSettings(newSettings);
     saveLocalBudget(newBudget);
 
+    // Instant local broadcast to any other tabs/windows
+    try {
+      const channel = new BroadcastChannel('wedding_live_channel');
+      channel.postMessage({
+        type: 'STATE_UPDATE',
+        data: {
+          guests: newGuests,
+          reminders: newReminders,
+          events: newEvents,
+          settings: newSettings,
+          budget: newBudget,
+        }
+      });
+      channel.close();
+    } catch (e) {}
+
+    // Auto-sync immediately to Cloud Firestore
     if (newSettings.cloudSyncEnabled) {
+      setSyncState('syncing');
       syncToCloud({
         guests: newGuests,
         reminders: newReminders,
         events: newEvents,
         settings: newSettings,
         budget: newBudget,
+      }).then((res) => {
+        if (res.success) {
+          setSyncState('synced');
+          setLastSyncedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+          setSyncErrorMessage(null);
+        } else {
+          setSyncState('error');
+          setSyncErrorMessage(res.error || 'Firestore not provisioned');
+        }
       });
     }
   }, []);
@@ -131,17 +188,33 @@ export function App() {
             setBudgetItems(remotePayload.budget);
             saveLocalBudget(remotePayload.budget);
           }
+          setSyncState('synced');
+          setLastSyncedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+          setSyncErrorMessage(null);
         }
       },
       () => {
         // Initial upload if Firestore room document doesn't exist yet
+        setSyncState('syncing');
         syncToCloud({
           guests,
           reminders,
           events,
           settings,
           budget: budgetItems,
+        }).then((res) => {
+          if (res.success) {
+            setSyncState('synced');
+            setLastSyncedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+          } else {
+            setSyncState('error');
+            setSyncErrorMessage(res.error || 'Firestore not provisioned');
+          }
         });
+      },
+      (error) => {
+        setSyncState('error');
+        setSyncErrorMessage('Firestore not provisioned or permission denied');
       }
     );
   }, [settings.cloudSyncEnabled, settings.syncRoomCode, settings.firebaseConfig]);
@@ -307,14 +380,25 @@ export function App() {
   };
 
   // Cloud Manual Sync
-  const handleManualSync = async () => {
-    return await syncToCloud({
+  const handleManualSync = async (): Promise<boolean> => {
+    setSyncState('syncing');
+    const res = await syncToCloud({
       guests,
       reminders,
       events,
       settings,
       budget: budgetItems,
     });
+    if (res.success) {
+      setSyncState('synced');
+      setLastSyncedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      setSyncErrorMessage(null);
+      return true;
+    } else {
+      setSyncState('error');
+      setSyncErrorMessage(res.error || 'Firestore not provisioned');
+      return false;
+    }
   };
 
   // Restore Full Backup
@@ -358,7 +442,30 @@ export function App() {
         guestCount={guests.length}
         reminderCount={reminders.length}
         budgetCount={budgetItems.length}
+        syncState={syncState}
+        lastSyncedTime={lastSyncedTime}
+        syncErrorMessage={syncErrorMessage}
       />
+
+      {/* Cloud Sync Setup Alert Banner (If Firestore not yet created in Firebase) */}
+      {syncState === 'error' && (
+        <div className="bg-gradient-to-r from-amber-500 via-rose-500 to-rose-600 text-white px-4 py-2.5 text-xs shadow-sm">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2 text-center sm:text-left">
+              <span className="text-base">☁️</span>
+              <span>
+                <strong>Real-Time Cloud Sync:</strong> All changes are auto-saving locally & across open tabs. To sync across other family phones live, enable Firestore in Firebase Console.
+              </span>
+            </div>
+            <button
+              onClick={() => setIsCloudSyncOpen(true)}
+              className="px-3 py-1 rounded-lg bg-white text-rose-900 font-bold text-xs shadow-xs hover:bg-rose-50 transition-all flex-shrink-0"
+            >
+              View Quick 1-Min Steps
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">

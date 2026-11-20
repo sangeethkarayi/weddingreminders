@@ -255,6 +255,19 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
               </div>
             </div>
 
+            {/* Quick 1-Minute Firestore Activation Guide */}
+            <div className="p-3 rounded-xl bg-amber-50/80 border border-amber-200/80 text-xs text-amber-900 space-y-1">
+              <span className="font-bold flex items-center gap-1.5 text-amber-950">
+                <span>⚡</span>
+                <span>Activate Real-Time Sync in Firebase (30 seconds):</span>
+              </span>
+              <ol className="list-decimal list-inside space-y-0.5 text-[11px] text-amber-900/90 pl-1 leading-relaxed">
+                <li>Go to <a href="https://console.firebase.google.com" target="_blank" rel="noreferrer" className="underline font-bold text-amber-950">console.firebase.google.com</a> ➔ Open <strong>jishnu-swathi-wedding</strong>.</li>
+                <li>In left sidebar, click <strong>Build ➔ Firestore Database</strong>.</li>
+                <li>Click <strong>"Create database"</strong> ➔ select <strong>"Start in test mode"</strong> ➔ click <strong>Enable</strong>.</li>
+              </ol>
+            </div>
+
             {settings.cloudSyncEnabled && (
               <button
                 type="button"
