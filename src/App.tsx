@@ -515,6 +515,7 @@ export function App() {
           setReminderToEdit(null);
         }}
         onSave={handleSaveReminder}
+        onDelete={handleDeleteReminder}
         reminderToEdit={reminderToEdit}
         settings={settings}
       />

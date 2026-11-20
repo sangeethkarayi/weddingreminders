@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { X, Bell, Calendar, Clock, DollarSign, User, Phone, Tag, Star, AlertCircle } from 'lucide-react';
+import { X, Bell, Calendar, Clock, DollarSign, User, Phone, Tag, Star, AlertCircle, Trash2 } from 'lucide-react';
 import { WeddingReminder, ReminderCategory, ReminderPriority, ReminderStatus, WeddingSettings } from '../types/wedding';
 
 interface ReminderModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (reminder: WeddingReminder) => void;
+  onDelete?: (id: string) => void;
   reminderToEdit?: WeddingReminder | null;
   settings: WeddingSettings;
 }
@@ -29,6 +30,7 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  onDelete,
   reminderToEdit,
   settings,
 }) => {
@@ -460,20 +462,36 @@ export const ReminderModal: React.FC<ReminderModalProps> = ({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium text-sm transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-sm shadow-md shadow-amber-600/20 transition-colors"
-            >
-              {reminderToEdit ? 'Save Changes' : 'Create Reminder'}
-            </button>
+          <div className="flex items-center justify-between gap-3 pt-4 border-t border-slate-100">
+            {reminderToEdit && onDelete ? (
+              <button
+                type="button"
+                onClick={() => {
+                  onDelete(reminderToEdit.id);
+                  onClose();
+                }}
+                className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2.5 rounded-xl border border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100 font-semibold text-xs sm:text-sm transition-colors"
+              >
+                <Trash2 className="w-4 h-4 text-rose-600" />
+                <span>Delete Reminder</span>
+              </button>
+            ) : <div />}
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 sm:px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium text-xs sm:text-sm transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-5 sm:px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs sm:text-sm shadow-md shadow-amber-600/20 transition-colors"
+              >
+                {reminderToEdit ? 'Save Changes' : 'Create Reminder'}
+              </button>
+            </div>
           </div>
         </form>
       </div>

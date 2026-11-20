@@ -50,10 +50,7 @@ export const getLocalGuests = (): Guest[] => {
     const data = localStorage.getItem(STORAGE_KEYS.GUESTS);
     if (!data) return initialGuests;
     const parsed = JSON.parse(data);
-    if (!Array.isArray(parsed) || !parsed.some((g: any) => g.invitedBy?.includes('Ramachandran'))) {
-      return initialGuests;
-    }
-    return parsed;
+    return Array.isArray(parsed) ? parsed : initialGuests;
   } catch (e) {
     console.error('Error reading guests from localStorage', e);
     return initialGuests;
@@ -73,10 +70,7 @@ export const getLocalReminders = (): WeddingReminder[] => {
     const data = localStorage.getItem(STORAGE_KEYS.REMINDERS);
     if (!data) return initialReminders;
     const parsed = JSON.parse(data);
-    if (!Array.isArray(parsed) || !parsed.some((r: any) => r.assignedTo?.includes('Ramachandran'))) {
-      return initialReminders;
-    }
-    return parsed;
+    return Array.isArray(parsed) ? parsed : initialReminders;
   } catch (e) {
     console.error('Error reading reminders from localStorage', e);
     return initialReminders;

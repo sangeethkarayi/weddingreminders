@@ -27,6 +27,7 @@ export const RemindersManager: React.FC<RemindersManagerProps> = ({
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>('all');
   const [activeStatusFilter, setActiveStatusFilter] = useState<string>('all');
   const [selectedMemberFilter, setSelectedMemberFilter] = useState<string>('all');
+  const [reminderToDelete, setReminderToDelete] = useState<WeddingReminder | null>(null);
 
   // Trigger celebration on completing important reminder
   const handleToggle = (id: string, currentStatus: ReminderStatus) => {
@@ -224,37 +225,41 @@ export const RemindersManager: React.FC<RemindersManagerProps> = ({
                     <span>{isCompleted ? 'Mark Pending' : 'Done'}</span>
                   </button>
 
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
                     {reminder.vendorPhone && (
                       <a
                         href={`tel:${reminder.vendorPhone}`}
-                        className="p-1.5 rounded-lg text-emerald-700 hover:bg-emerald-50 transition-colors"
+                        className="p-1.5 rounded-lg text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors"
                         title={`Call ${reminder.vendorName || 'Vendor'}`}
                       >
                         <Phone className="w-4 h-4" />
                       </a>
                     )}
                     <button
+                      type="button"
                       onClick={() => onEditReminder(reminder)}
-                      className={`p-1.5 rounded-lg transition-colors ${
-                        isCompleted ? 'text-amber-200 hover:text-white' : 'text-slate-400 hover:text-slate-700'
+                      className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                        isCompleted
+                          ? 'bg-amber-800/80 text-amber-100 hover:bg-amber-700'
+                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                       }`}
                       title="Edit Reminder"
                     >
-                      <Edit2 className="w-4 h-4" />
+                      <Edit2 className="w-3.5 h-3.5" />
+                      <span>Edit</span>
                     </button>
                     <button
-                      onClick={() => {
-                        if (confirm(`Delete reminder "${reminder.title}"?`)) {
-                          onDeleteReminder(reminder.id);
-                        }
-                      }}
-                      className={`p-1.5 rounded-lg transition-colors ${
-                        isCompleted ? 'text-amber-200 hover:text-white' : 'text-slate-400 hover:text-rose-600'
+                      type="button"
+                      onClick={() => setReminderToDelete(reminder)}
+                      className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                        isCompleted
+                          ? 'bg-rose-900/40 text-rose-200 hover:bg-rose-900/70'
+                          : 'bg-rose-50 text-rose-700 hover:bg-rose-100'
                       }`}
                       title="Delete Reminder"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Delete</span>
                     </button>
                   </div>
                 </div>
@@ -534,20 +539,22 @@ export const RemindersManager: React.FC<RemindersManagerProps> = ({
                       </a>
                     )}
                     <button
+                      type="button"
                       onClick={() => onEditReminder(reminder)}
-                      className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-semibold transition-colors"
+                      title="Edit Reminder"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
+                      <span>Edit</span>
                     </button>
                     <button
-                      onClick={() => {
-                        if (confirm(`Delete reminder "${reminder.title}"?`)) {
-                          onDeleteReminder(reminder.id);
-                        }
-                      }}
-                      className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                      type="button"
+                      onClick={() => setReminderToDelete(reminder)}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100 text-xs font-semibold transition-colors"
+                      title="Delete Reminder"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
+                      <span>Delete</span>
                     </button>
                   </div>
                 </div>
@@ -556,6 +563,47 @@ export const RemindersManager: React.FC<RemindersManagerProps> = ({
           </div>
         )}
       </div>
+
+      {/* In-App Delete Confirmation Modal (Safe for Mobile & PWAs) */}
+      {reminderToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-slate-100 space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 shadow-xs">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Delete Reminder</h3>
+                <p className="text-xs text-slate-500">Are you sure you want to delete this reminder?</p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 text-sm font-semibold text-slate-800">
+              "{reminderToDelete.title}"
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setReminderToDelete(null)}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onDeleteReminder(reminderToDelete.id);
+                  setReminderToDelete(null);
+                }}
+                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-600/20 transition-colors"
+              >
+                Yes, Delete Reminder
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
