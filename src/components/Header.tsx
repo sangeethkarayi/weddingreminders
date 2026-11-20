@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Cloud, Settings, FileSpreadsheet, Users, Bell, Calendar, DollarSign } from 'lucide-react';
+import { Sparkles, Cloud, Settings, FileSpreadsheet, Users, Bell, Calendar, DollarSign, Lock } from 'lucide-react';
 import { WeddingSettings } from '../types/wedding';
 
 interface HeaderProps {
@@ -9,6 +9,7 @@ interface HeaderProps {
   onOpenSettings: () => void;
   onOpenCloudSync: () => void;
   onExportCSV: () => void;
+  onLock?: () => void;
   guestCount: number;
   reminderCount: number;
   budgetCount?: number;
@@ -21,6 +22,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSettings,
   onOpenCloudSync,
   onExportCSV,
+  onLock,
   guestCount,
   reminderCount,
   budgetCount,
@@ -148,6 +150,17 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Settings className="w-4 h-4" />
             </button>
+
+            {/* Lock Portal Button */}
+            {onLock && (
+              <button
+                onClick={onLock}
+                className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-600 transition-colors"
+                title="Lock Portal (Passcode Required)"
+              >
+                <Lock className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       </div>

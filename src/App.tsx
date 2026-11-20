@@ -24,9 +24,33 @@ import { ExpenseModal } from './components/ExpenseModal';
 import { PaymentModal } from './components/PaymentModal';
 import { SettingsModal } from './components/SettingsModal';
 import { CloudSyncModal } from './components/CloudSyncModal';
+import { PasscodeLock } from './components/PasscodeLock';
 import confetti from 'canvas-confetti';
 
+const PASSCODE = '21772494';
+const AUTH_KEY = 'wedding_auth_token_v1';
+
 export function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    try {
+      const local = localStorage.getItem(AUTH_KEY);
+      const session = sessionStorage.getItem(AUTH_KEY);
+      return local === `unlocked_${PASSCODE}` || session === `unlocked_${PASSCODE}`;
+    } catch {
+      return false;
+    }
+  });
+
+  const handleUnlock = () => {
+    setIsAuthenticated(true);
+  };
+
+  const handleLock = () => {
+    localStorage.removeItem(AUTH_KEY);
+    sessionStorage.removeItem(AUTH_KEY);
+    setIsAuthenticated(false);
+  };
+
   const [settings, setSettings] = useState<WeddingSettings>(getLocalSettings);
   const [guests, setGuests] = useState<Guest[]>(getLocalGuests);
   const [reminders, setReminders] = useState<WeddingReminder[]>(getLocalReminders);
@@ -309,6 +333,17 @@ export function App() {
     );
   };
 
+  if (!isAuthenticated) {
+    return (
+      <PasscodeLock
+        onUnlock={handleUnlock}
+        correctPasscode={PASSCODE}
+        groomName={settings.groomName}
+        brideName={settings.brideName}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800">
       {/* Top Header */}
@@ -319,6 +354,7 @@ export function App() {
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenCloudSync={() => setIsCloudSyncOpen(true)}
         onExportCSV={() => exportGuestsToCSV(guests, settings)}
+        onLock={handleLock}
         guestCount={guests.length}
         reminderCount={reminders.length}
         budgetCount={budgetItems.length}
