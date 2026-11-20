@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, Settings, Heart, Calendar, MapPin, Users, Plus, Trash2, Camera, Upload, Link as LinkIcon, Sparkles } from 'lucide-react';
 import { WeddingSettings } from '../types/wedding';
 
@@ -32,6 +32,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [currencySymbol, setCurrencySymbol] = useState(settings.currencySymbol || '₹');
   const [familyMembers, setFamilyMembers] = useState<string[]>([...settings.familyMembers]);
   const [newMemberName, setNewMemberName] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setGroomName(settings.groomName);
+      setBrideName(settings.brideName);
+      setProfilePicture(settings.profilePicture || '');
+      setWeddingDate(settings.weddingDate.substring(0, 16));
+      setNightBeforeDate(settings.nightBeforeDate.substring(0, 16));
+      setWeddingVenue(settings.weddingVenue);
+      setWeddingMapUrl(settings.weddingMapUrl || 'https://maps.app.goo.gl/GqVMveX52eWPWwGf9');
+      setNightBeforeVenue(settings.nightBeforeVenue);
+      setNightBeforeMapUrl(settings.nightBeforeMapUrl || 'https://maps.app.goo.gl/kuf1hXdppVXVykks9');
+      setCurrencySymbol(settings.currencySymbol || '₹');
+      setFamilyMembers([...settings.familyMembers]);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

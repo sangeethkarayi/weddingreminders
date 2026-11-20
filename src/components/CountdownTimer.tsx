@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Calendar, Sparkles, MapPin, ExternalLink, Camera } from 'lucide-react';
+import { Clock, Calendar, Sparkles, MapPin, ExternalLink } from 'lucide-react';
 import { WeddingSettings } from '../types/wedding';
 
 interface CountdownTimerProps {
@@ -76,14 +76,14 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ settings, onOpen
         {/* Left Side: Couple Profile Picture + Wedding Title & Venue info */}
         <div className="flex flex-col sm:flex-row items-center md:items-start gap-4 sm:gap-6 text-center sm:text-left">
           {/* Profile Picture Avatar */}
-          <div className="relative group flex-shrink-0">
+          <div className="flex-shrink-0">
             <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full p-1 bg-gradient-to-tr from-amber-300 via-rose-300 to-amber-400 shadow-2xl shadow-rose-950/50">
               <div className="w-full h-full rounded-full overflow-hidden bg-rose-950/80 flex items-center justify-center border-2 border-white/20">
                 {settings.profilePicture ? (
                   <img
                     src={settings.profilePicture}
                     alt={`${settings.groomName} & ${settings.brideName}`}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-rose-800 to-amber-700 text-white font-playfair font-bold text-xl sm:text-2xl md:text-3xl tracking-wider select-none">
@@ -93,15 +93,6 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ settings, onOpen
                 )}
               </div>
             </div>
-            {/* Quick change button pill overlay */}
-            <button
-              type="button"
-              onClick={onOpenSettings}
-              title="Change Profile Photo in Settings"
-              className="absolute -bottom-1 -right-1 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-400 hover:bg-amber-300 text-rose-950 flex items-center justify-center shadow-lg transition-transform hover:scale-110 border-2 border-rose-900"
-            >
-              <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </button>
           </div>
 
           <div className="space-y-1.5 sm:space-y-2">
