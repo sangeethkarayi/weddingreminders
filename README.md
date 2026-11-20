@@ -68,3 +68,4 @@ npm run preview
 This app is built with PWA support:
 - **iPhone / Safari**: Tap the **Share** button in Safari, then select **"Add to Home Screen"**.
 - **Android / Chrome**: Tap the three dots menu, then select **"Install App"** or **"Add to Home screen"**.
+# weddingreminders
