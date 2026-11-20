@@ -4,7 +4,7 @@ import {
   getLocalGuests, saveLocalGuests,
   getLocalReminders, saveLocalReminders,
   getLocalEvents, saveLocalEvents,
-  getLocalBudget, saveLocalBudget,
+  getLocalBudget, saveLocalBudget, getLocalLastEditTime,
   initCloudSync, syncToCloud, exportGuestsToCSV
 } from './services/storage';
 import { 
@@ -184,21 +184,43 @@ export function App() {
       settings,
       (remotePayload) => {
         if (remotePayload) {
-          if (remotePayload.guests) {
+          const remoteTime = remotePayload.lastSyncedAt ? new Date(remotePayload.lastSyncedAt).getTime() : 0;
+          const localTime = getLocalLastEditTime();
+
+          // If local edits were made after the remote snapshot was saved, push local changes to cloud instead of overwriting!
+          if (localTime > 0 && remoteTime > 0 && localTime > remoteTime + 3000) {
+            console.log('Local data is newer than remote snapshot. Pushing local to cloud...');
+            syncToCloud({
+              guests: getLocalGuests(),
+              reminders: getLocalReminders(),
+              events: getLocalEvents(),
+              settings: getLocalSettings(),
+              budget: getLocalBudget(),
+            }).then((res) => {
+              if (res.success) {
+                setSyncState('synced');
+                setLastSyncedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+                setSyncErrorMessage(null);
+              }
+            });
+            return;
+          }
+
+          if (Array.isArray(remotePayload.guests) && remotePayload.guests.length > 0) {
             setGuests((prev) => {
               if (JSON.stringify(prev) === JSON.stringify(remotePayload.guests)) return prev;
               saveLocalGuests(remotePayload.guests);
               return remotePayload.guests;
             });
           }
-          if (remotePayload.reminders) {
+          if (Array.isArray(remotePayload.reminders)) {
             setReminders((prev) => {
               if (JSON.stringify(prev) === JSON.stringify(remotePayload.reminders)) return prev;
               saveLocalReminders(remotePayload.reminders);
               return remotePayload.reminders;
             });
           }
-          if (remotePayload.events) {
+          if (Array.isArray(remotePayload.events)) {
             setEvents((prev) => {
               if (JSON.stringify(prev) === JSON.stringify(remotePayload.events)) return prev;
               saveLocalEvents(remotePayload.events);
@@ -212,7 +234,7 @@ export function App() {
               return remotePayload.settings;
             });
           }
-          if (remotePayload.budget) {
+          if (Array.isArray(remotePayload.budget)) {
             const remoteBudget = remotePayload.budget;
             setBudgetItems((prev) => {
               if (JSON.stringify(prev) === JSON.stringify(remoteBudget)) return prev;
@@ -229,15 +251,16 @@ export function App() {
         // Initial upload if Firestore room document doesn't exist yet
         setSyncState('syncing');
         syncToCloud({
-          guests,
-          reminders,
-          events,
-          settings,
-          budget: budgetItems,
+          guests: getLocalGuests(),
+          reminders: getLocalReminders(),
+          events: getLocalEvents(),
+          settings: getLocalSettings(),
+          budget: getLocalBudget(),
         }).then((res) => {
           if (res.success) {
             setSyncState('synced');
             setLastSyncedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+            setSyncErrorMessage(null);
           } else {
             setSyncState('error');
             setSyncErrorMessage(res.error || 'Firestore not provisioned');
@@ -246,7 +269,7 @@ export function App() {
       },
       (error) => {
         setSyncState('error');
-        setSyncErrorMessage('Firestore not provisioned or permission denied');
+        setSyncErrorMessage(typeof error === 'string' ? error : (error?.message || 'Firestore connection or security rules issue'));
       }
     );
   }, [settings.cloudSyncEnabled, settings.syncRoomCode, settings.firebaseConfig?.apiKey]);
@@ -484,10 +507,17 @@ export function App() {
         <div className="bg-gradient-to-r from-amber-500 via-rose-500 to-rose-600 text-white px-4 py-2.5 text-xs shadow-sm">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2.5">
             <div className="flex items-center gap-2 text-center sm:text-left">
-              <span className="text-base">☁️</span>
-              <span>
-                <strong>Real-Time Cloud Sync:</strong> All changes are auto-saving locally & across open tabs. To sync across other family phones live, enable Firestore in Firebase Console.
-              </span>
+              <span className="text-base flex-shrink-0">☁️</span>
+              <div className="leading-snug">
+                <div>
+                  <strong>Real-Time Cloud Sync:</strong> All changes are auto-saving locally & across open tabs. To sync across other family phones live, enable Firestore in Firebase Console.
+                </div>
+                {syncErrorMessage && (
+                  <div className="font-mono text-[10px] text-rose-100/90 mt-0.5">
+                    Diagnostic: {syncErrorMessage}
+                  </div>
+                )}
+              </div>
             </div>
             <button
               onClick={() => setIsCloudSyncOpen(true)}
@@ -676,6 +706,8 @@ export function App() {
         onManualSync={handleManualSync}
         fullPayload={{ settings, guests, reminders, events, budget: budgetItems }}
         onRestoreBackup={handleRestoreBackup}
+        syncErrorMessage={syncErrorMessage}
+        syncState={syncState}
       />
     </div>
   );

@@ -11,6 +11,8 @@ interface CloudSyncModalProps {
   onManualSync: () => Promise<boolean>;
   fullPayload: any;
   onRestoreBackup: (payload: any) => void;
+  syncErrorMessage?: string | null;
+  syncState?: 'synced' | 'syncing' | 'error' | 'idle';
 }
 
 export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
@@ -21,6 +23,8 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
   onManualSync,
   fullPayload,
   onRestoreBackup,
+  syncErrorMessage,
+  syncState,
 }) => {
   const [cloudSyncEnabled, setCloudSyncEnabled] = useState(settings.cloudSyncEnabled);
   const [syncRoomCode, setSyncRoomCode] = useState(settings.syncRoomCode || 'WED-FAMILY');
@@ -267,6 +271,16 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
                 <li>Click <strong>"Create database"</strong> ➔ select <strong>"Start in test mode"</strong> ➔ click <strong>Enable</strong>.</li>
               </ol>
             </div>
+
+            {syncErrorMessage && (
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+                <div className="space-y-0.5">
+                  <div className="font-bold text-rose-900">Current Firestore Diagnostic:</div>
+                  <div className="font-mono text-[11px] text-rose-700 break-all">{syncErrorMessage}</div>
+                </div>
+              </div>
+            )}
 
             {settings.cloudSyncEnabled && (
               <button

@@ -1,7 +1,7 @@
 import { Guest, WeddingReminder, WeddingEvent, WeddingSettings, BudgetItem } from '../types/wedding';
 import { initialGuests, initialReminders, initialEvents, initialSettings, initialBudgetItems } from '../data/initialData';
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
-import { getFirestore, doc, onSnapshot, setDoc, Firestore } from 'firebase/firestore';
+import { initializeFirestore, getFirestore, doc, onSnapshot, setDoc, Firestore } from 'firebase/firestore';
 
 const STORAGE_KEYS = {
   GUESTS: 'wedding_guests_v5',
@@ -9,11 +9,40 @@ const STORAGE_KEYS = {
   EVENTS: 'wedding_events_v5',
   SETTINGS: 'wedding_settings_v5',
   BUDGET: 'wedding_budget_v5',
+  LAST_LOCAL_EDIT: 'wedding_last_local_edit_v5',
 };
 
 let firebaseApp: FirebaseApp | null = null;
 let firestoreDb: Firestore | null = null;
 let unsubscribeFirestore: (() => void) | null = null;
+
+export const getOrInitFirestore = (config: any): Firestore => {
+  if (!firebaseApp) {
+    if (!getApps().length) {
+      firebaseApp = initializeApp(config);
+    } else {
+      firebaseApp = getApps()[0];
+    }
+  }
+  if (!firestoreDb) {
+    try {
+      firestoreDb = initializeFirestore(firebaseApp, {
+        ignoreUndefinedProperties: true,
+      });
+    } catch (e) {
+      firestoreDb = getFirestore(firebaseApp);
+    }
+  }
+  return firestoreDb;
+};
+
+export const getLocalLastEditTime = (): number => {
+  try {
+    return parseInt(localStorage.getItem(STORAGE_KEYS.LAST_LOCAL_EDIT) || '0', 10);
+  } catch {
+    return 0;
+  }
+};
 
 // Local Storage Helpers
 export const getLocalSettings = (): WeddingSettings => {
@@ -40,6 +69,7 @@ export const getLocalSettings = (): WeddingSettings => {
 export const saveLocalSettings = (settings: WeddingSettings) => {
   try {
     localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+    localStorage.setItem(STORAGE_KEYS.LAST_LOCAL_EDIT, String(Date.now()));
   } catch (e) {
     console.error('Error saving settings to localStorage', e);
   }
@@ -60,6 +90,7 @@ export const getLocalGuests = (): Guest[] => {
 export const saveLocalGuests = (guests: Guest[]) => {
   try {
     localStorage.setItem(STORAGE_KEYS.GUESTS, JSON.stringify(guests));
+    localStorage.setItem(STORAGE_KEYS.LAST_LOCAL_EDIT, String(Date.now()));
   } catch (e) {
     console.error('Error saving guests to localStorage', e);
   }
@@ -80,6 +111,7 @@ export const getLocalReminders = (): WeddingReminder[] => {
 export const saveLocalReminders = (reminders: WeddingReminder[]) => {
   try {
     localStorage.setItem(STORAGE_KEYS.REMINDERS, JSON.stringify(reminders));
+    localStorage.setItem(STORAGE_KEYS.LAST_LOCAL_EDIT, String(Date.now()));
   } catch (e) {
     console.error('Error saving reminders to localStorage', e);
   }
@@ -98,6 +130,7 @@ export const getLocalEvents = (): WeddingEvent[] => {
 export const saveLocalEvents = (events: WeddingEvent[]) => {
   try {
     localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(events));
+    localStorage.setItem(STORAGE_KEYS.LAST_LOCAL_EDIT, String(Date.now()));
   } catch (e) {
     console.error('Error saving events to localStorage', e);
   }
@@ -118,6 +151,7 @@ export const getLocalBudget = (): BudgetItem[] => {
 export const saveLocalBudget = (items: BudgetItem[]) => {
   try {
     localStorage.setItem(STORAGE_KEYS.BUDGET, JSON.stringify(items));
+    localStorage.setItem(STORAGE_KEYS.LAST_LOCAL_EDIT, String(Date.now()));
   } catch (e) {
     console.error('Error saving budget to localStorage', e);
   }
@@ -150,12 +184,7 @@ export const initCloudSync = (
 
   try {
     const config = settings.firebaseConfig;
-    if (!getApps().length) {
-      firebaseApp = initializeApp(config);
-    } else {
-      firebaseApp = getApps()[0];
-    }
-    firestoreDb = getFirestore(firebaseApp);
+    firestoreDb = getOrInitFirestore(config);
 
     const roomCode = settings.syncRoomCode || 'WED-JISHNU-SWATHI';
     const docRef = doc(firestoreDb, 'wedding_rooms', roomCode);
@@ -173,13 +202,13 @@ export const initCloudSync = (
       }
     }, (error) => {
       console.warn('Firestore subscription error (check credentials or security rules):', error);
-      if (onError) onError(error);
+      if (onError) onError(error?.message || String(error));
     });
 
     return true;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to initialize Firebase Sync:', error);
-    if (onError) onError(error);
+    if (onError) onError(error?.message || String(error));
     return false;
   }
 };
@@ -198,21 +227,17 @@ export const syncToCloud = async (
   }
 
   try {
-    if (!firestoreDb) {
-      const config = payload.settings.firebaseConfig;
-      if (!config || !config.apiKey) return { success: false, error: 'Missing Firebase config' };
-      if (!getApps().length) {
-        firebaseApp = initializeApp(config);
-      } else {
-        firebaseApp = getApps()[0];
-      }
-      firestoreDb = getFirestore(firebaseApp);
-    }
+    const config = payload.settings.firebaseConfig;
+    if (!config || !config.apiKey) return { success: false, error: 'Missing Firebase config' };
+    const db = getOrInitFirestore(config);
 
     const roomCode = payload.settings.syncRoomCode || 'WED-JISHNU-SWATHI';
-    const docRef = doc(firestoreDb, 'wedding_rooms', roomCode);
+    const docRef = doc(db, 'wedding_rooms', roomCode);
+    
+    // Deep sanitize payload to strip any undefined values that Firestore rejects
+    const cleanPayload = JSON.parse(JSON.stringify(payload));
     const data: WeddingCloudPayload = {
-      ...payload,
+      ...cleanPayload,
       lastSyncedAt: new Date().toISOString()
     };
     await setDoc(docRef, data, { merge: true });
