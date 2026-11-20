@@ -479,6 +479,7 @@ export function App() {
         correctPasscode={PASSCODE}
         groomName={settings.groomName}
         brideName={settings.brideName}
+        profilePicture={settings.profilePicture}
       />
     );
   }

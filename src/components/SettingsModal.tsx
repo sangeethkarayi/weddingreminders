@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, Settings, Heart, Calendar, MapPin, Users, Plus, Trash2 } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { X, Settings, Heart, Calendar, MapPin, Users, Plus, Trash2, Camera, Upload, Link as LinkIcon, Sparkles } from 'lucide-react';
 import { WeddingSettings } from '../types/wedding';
 
 interface SettingsModalProps {
@@ -17,6 +17,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 }) => {
   const [groomName, setGroomName] = useState(settings.groomName);
   const [brideName, setBrideName] = useState(settings.brideName);
+  const [profilePicture, setProfilePicture] = useState(settings.profilePicture || '');
+  const [isUploading, setIsUploading] = useState(false);
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const [imageUrlInput, setImageUrlInput] = useState('');
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
   const [weddingDate, setWeddingDate] = useState(settings.weddingDate.substring(0, 16));
   const [nightBeforeDate, setNightBeforeDate] = useState(settings.nightBeforeDate.substring(0, 16));
   const [weddingVenue, setWeddingVenue] = useState(settings.weddingVenue);
@@ -28,6 +34,66 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [newMemberName, setNewMemberName] = useState('');
 
   if (!isOpen) return null;
+
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file (JPEG, PNG, WEBP).');
+      return;
+    }
+
+    setIsUploading(true);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxSize = 450;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxSize) {
+            height = Math.round((height * maxSize) / width);
+            width = maxSize;
+          }
+        } else {
+          if (height > maxSize) {
+            width = Math.round((width * maxSize) / height);
+            height = maxSize;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+          setProfilePicture(dataUrl);
+        }
+        setIsUploading(false);
+      };
+      img.onerror = () => {
+        setIsUploading(false);
+        alert('Could not process the selected image. Please try another.');
+      };
+      if (typeof event.target?.result === 'string') {
+        img.src = event.target.result;
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleApplyUrl = () => {
+    if (imageUrlInput.trim()) {
+      setProfilePicture(imageUrlInput.trim());
+      setImageUrlInput('');
+      setShowUrlInput(false);
+    }
+  };
 
   const handleAddMember = () => {
     if (newMemberName.trim() && !familyMembers.includes(newMemberName.trim())) {
@@ -48,6 +114,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       ...settings,
       groomName: groomName.trim(),
       brideName: brideName.trim(),
+      profilePicture: profilePicture.trim(),
       weddingDate: new Date(weddingDate).toISOString(),
       nightBeforeDate: new Date(nightBeforeDate).toISOString(),
       weddingVenue: weddingVenue.trim(),
@@ -84,6 +151,111 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
+          {/* Couple Profile Picture Section */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-rose-50/70 via-amber-50/40 to-rose-50/70 border border-rose-200/80 shadow-xs">
+            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-5">
+              {/* Avatar Preview */}
+              <div className="relative group flex-shrink-0">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full p-1 bg-gradient-to-tr from-amber-400 via-rose-400 to-amber-300 shadow-md">
+                  <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center border-2 border-white shadow-inner">
+                    {profilePicture ? (
+                      <img
+                        src={profilePicture}
+                        alt="Couple Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-rose-600 to-amber-600 text-white font-playfair font-bold text-xl sm:text-2xl">
+                        <span>{groomName[0] || 'J'} & {brideName[0] || 'S'}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center shadow-md transition-transform hover:scale-105 border-2 border-white"
+                  title="Upload New Photo"
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* Upload Controls */}
+              <div className="flex-1 text-center sm:text-left space-y-2 w-full">
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 flex items-center justify-center sm:justify-start gap-1.5">
+                    <Sparkles className="w-4 h-4 text-amber-500" />
+                    <span>Couple Profile Picture</span>
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Replaces the avatar on the home countdown banner, header & lock screen.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
+                  {/* File Upload Input */}
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    accept="image/*"
+                    onChange={handleImageFileChange}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    disabled={isUploading}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-colors"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>{isUploading ? 'Compressing...' : 'Upload from Device'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowUrlInput(!showUrlInput)}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors"
+                  >
+                    <LinkIcon className="w-3.5 h-3.5 text-slate-500" />
+                    <span>{showUrlInput ? 'Hide URL' : 'Paste Image URL'}</span>
+                  </button>
+
+                  {profilePicture && (
+                    <button
+                      type="button"
+                      onClick={() => setProfilePicture('')}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-rose-600 hover:bg-rose-100/60 text-xs font-semibold transition-colors"
+                      title="Reset to default initials monogram"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Remove</span>
+                    </button>
+                  )}
+                </div>
+
+                {showUrlInput && (
+                  <div className="flex items-center gap-2 pt-1">
+                    <input
+                      type="url"
+                      placeholder="https://example.com/photo.jpg"
+                      value={imageUrlInput}
+                      onChange={(e) => setImageUrlInput(e.target.value)}
+                      className="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-rose-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleApplyUrl}
+                      className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 flex-shrink-0"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Couple Names */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Calendar, Sparkles, MapPin, ExternalLink } from 'lucide-react';
+import { Clock, Calendar, Sparkles, MapPin, ExternalLink, Camera } from 'lucide-react';
 import { WeddingSettings } from '../types/wedding';
 
 interface CountdownTimerProps {
@@ -73,33 +73,64 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ settings, onOpen
       <div className="absolute bottom-0 left-0 -mb-12 -ml-12 w-64 h-64 bg-rose-500/20 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-        {/* Left Side: Wedding Title & Venue info */}
-        <div className="text-center md:text-left space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-700/60 border border-rose-500/30 text-rose-200 text-xs font-medium tracking-wide uppercase">
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span>The Wedding Celebration</span>
+        {/* Left Side: Couple Profile Picture + Wedding Title & Venue info */}
+        <div className="flex flex-col sm:flex-row items-center md:items-start gap-4 sm:gap-6 text-center sm:text-left">
+          {/* Profile Picture Avatar */}
+          <div className="relative group flex-shrink-0">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full p-1 bg-gradient-to-tr from-amber-300 via-rose-300 to-amber-400 shadow-2xl shadow-rose-950/50">
+              <div className="w-full h-full rounded-full overflow-hidden bg-rose-950/80 flex items-center justify-center border-2 border-white/20">
+                {settings.profilePicture ? (
+                  <img
+                    src={settings.profilePicture}
+                    alt={`${settings.groomName} & ${settings.brideName}`}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-rose-800 to-amber-700 text-white font-playfair font-bold text-xl sm:text-2xl md:text-3xl tracking-wider select-none">
+                    <span>{settings.groomName[0]} & {settings.brideName[0]}</span>
+                    <span className="text-[9px] font-sans font-medium text-amber-200 uppercase tracking-widest opacity-80">Wedding</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            {/* Quick change button pill overlay */}
+            <button
+              type="button"
+              onClick={onOpenSettings}
+              title="Change Profile Photo in Settings"
+              className="absolute -bottom-1 -right-1 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-400 hover:bg-amber-300 text-rose-950 flex items-center justify-center shadow-lg transition-transform hover:scale-110 border-2 border-rose-900"
+            >
+              <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </button>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-playfair font-bold tracking-tight text-white">
-            {settings.groomName} <span className="font-cursive text-amber-300 text-4xl sm:text-5xl font-normal">&</span> {settings.brideName}
-          </h1>
-
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-rose-200 text-sm pt-1">
-            <div className="flex items-center gap-1.5">
-              <Calendar className="w-4 h-4 text-amber-300" />
-              <span>{activeTarget === 'wedding' ? weddingDateFormatted : nightBeforeFormatted}</span>
+          <div className="space-y-1.5 sm:space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-700/60 border border-rose-500/30 text-rose-200 text-xs font-medium tracking-wide uppercase">
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <span>The Wedding Celebration</span>
             </div>
-            <a
-              href={currentMapUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 max-w-sm truncate text-amber-200 hover:text-white transition-colors underline decoration-amber-400/50 underline-offset-2"
-              title="Open Location in Google Maps"
-            >
-              <MapPin className="w-4 h-4 text-amber-300 flex-shrink-0" />
-              <span className="truncate">{currentVenue}</span>
-              <ExternalLink className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 opacity-80" />
-            </a>
+
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-playfair font-bold tracking-tight text-white">
+              {settings.groomName} <span className="font-cursive text-amber-300 text-4xl sm:text-5xl font-normal">&</span> {settings.brideName}
+            </h1>
+
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-rose-200 text-sm pt-1">
+              <div className="flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 text-amber-300" />
+                <span>{activeTarget === 'wedding' ? weddingDateFormatted : nightBeforeFormatted}</span>
+              </div>
+              <a
+                href={currentMapUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 max-w-sm truncate text-amber-200 hover:text-white transition-colors underline decoration-amber-400/50 underline-offset-2"
+                title="Open Location in Google Maps"
+              >
+                <MapPin className="w-4 h-4 text-amber-300 flex-shrink-0" />
+                <span className="truncate">{currentVenue}</span>
+                <ExternalLink className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 opacity-80" />
+              </a>
+            </div>
           </div>
         </div>
 

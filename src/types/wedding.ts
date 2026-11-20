@@ -124,6 +124,7 @@ export interface FirebaseSyncConfig {
 export interface WeddingSettings {
   groomName: string;
   brideName: string;
+  profilePicture?: string; // Base64 data URL or image URL
   weddingDate: string; // YYYY-MM-DDTHH:mm
   nightBeforeDate: string; // YYYY-MM-DDTHH:mm
   weddingVenue: string;

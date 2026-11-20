@@ -19,6 +19,7 @@ export const defaultFirebaseConfig: FirebaseSyncConfig = {
 export const initialSettings: WeddingSettings = {
   groomName: 'Jishnu',
   brideName: 'Swathi',
+  profilePicture: '',
   weddingDate: weddingDateObj.toISOString(),
   nightBeforeDate: nightBeforeDateObj.toISOString(),
   weddingVenue: 'Wedding Hall (Main Ceremony)',

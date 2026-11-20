@@ -7,6 +7,7 @@ interface PasscodeLockProps {
   correctPasscode?: string;
   groomName?: string;
   brideName?: string;
+  profilePicture?: string;
 }
 
 export const PasscodeLock: React.FC<PasscodeLockProps> = ({
@@ -14,6 +15,7 @@ export const PasscodeLock: React.FC<PasscodeLockProps> = ({
   correctPasscode = '21772494',
   groomName = 'Jishnu',
   brideName = 'Swathi',
+  profilePicture,
 }) => {
   const [passcode, setPasscode] = useState('');
   const [showPasscode, setShowPasscode] = useState(false);
@@ -88,9 +90,19 @@ export const PasscodeLock: React.FC<PasscodeLockProps> = ({
       <div className="relative w-full max-w-sm sm:max-w-md bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-rose-100/50 p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-200">
         {/* Wedding Ring & Branding */}
         <div className="text-center space-y-2 mb-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-rose-600 via-rose-500 to-amber-500 text-white shadow-lg shadow-rose-600/30 mb-1">
-            <span className="text-3xl">💍</span>
-          </div>
+          {profilePicture ? (
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full p-1 bg-gradient-to-tr from-amber-400 via-rose-400 to-amber-300 shadow-xl shadow-rose-600/30 mb-1">
+              <img
+                src={profilePicture}
+                alt={`${groomName} & ${brideName}`}
+                className="w-full h-full rounded-full object-cover border-2 border-white"
+              />
+            </div>
+          ) : (
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-rose-600 via-rose-500 to-amber-500 text-white shadow-lg shadow-rose-600/30 mb-1">
+              <span className="text-3xl">💍</span>
+            </div>
+          )}
           <h1 className="text-2xl sm:text-3xl font-extrabold font-playfair text-slate-900 tracking-tight">
             {groomName} & {brideName}
           </h1>
