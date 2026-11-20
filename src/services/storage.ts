@@ -4,10 +4,10 @@ import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getFirestore, doc, onSnapshot, setDoc, Firestore } from 'firebase/firestore';
 
 const STORAGE_KEYS = {
-  GUESTS: 'wedding_guests_v3',
-  REMINDERS: 'wedding_reminders_v3',
-  EVENTS: 'wedding_events_v3',
-  SETTINGS: 'wedding_settings_v3',
+  GUESTS: 'wedding_guests_v4',
+  REMINDERS: 'wedding_reminders_v4',
+  EVENTS: 'wedding_events_v4',
+  SETTINGS: 'wedding_settings_v4',
 };
 
 let firebaseApp: FirebaseApp | null = null;
@@ -20,7 +20,7 @@ export const getLocalSettings = (): WeddingSettings => {
     const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
     if (!data) return initialSettings;
     const parsed = JSON.parse(data);
-    if (!parsed.weddingMapUrl || parsed.groomName === 'Rahul') {
+    if (!parsed.familyMembers?.includes('Ramachandran (Father)')) {
       return initialSettings;
     }
     return parsed;
@@ -43,8 +43,7 @@ export const getLocalGuests = (): Guest[] => {
     const data = localStorage.getItem(STORAGE_KEYS.GUESTS);
     if (!data) return initialGuests;
     const parsed = JSON.parse(data);
-    // If older dataset, use updated list
-    if (Array.isArray(parsed) && parsed.some((g: any) => g.invitedBy?.includes('Rahul'))) {
+    if (!Array.isArray(parsed) || !parsed.some((g: any) => g.invitedBy?.includes('Ramachandran'))) {
       return initialGuests;
     }
     return parsed;
@@ -67,7 +66,7 @@ export const getLocalReminders = (): WeddingReminder[] => {
     const data = localStorage.getItem(STORAGE_KEYS.REMINDERS);
     if (!data) return initialReminders;
     const parsed = JSON.parse(data);
-    if (Array.isArray(parsed) && parsed.some((r: any) => r.assignedTo?.includes('Rahul'))) {
+    if (!Array.isArray(parsed) || !parsed.some((r: any) => r.assignedTo?.includes('Ramachandran'))) {
       return initialReminders;
     }
     return parsed;
