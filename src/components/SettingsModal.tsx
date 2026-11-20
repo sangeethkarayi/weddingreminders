@@ -21,6 +21,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [imageUrlInput, setImageUrlInput] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [weddingDate, setWeddingDate] = useState(settings.weddingDate.substring(0, 16));
@@ -47,7 +48,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       setCurrencySymbol(settings.currencySymbol || '₹');
       setFamilyMembers([...settings.familyMembers]);
     }
-  }, [isOpen]);
+  }, [isOpen, settings.profilePicture]);
 
   if (!isOpen) return null;
 
@@ -55,18 +56,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      alert('Please select a valid image file (JPEG, PNG, WEBP).');
-      return;
-    }
-
     setIsUploading(true);
+    setSuccessMsg('');
     const reader = new FileReader();
     reader.onload = (event) => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const maxSize = 450;
+        const maxSize = 360;
         let width = img.width;
         let height = img.height;
 
@@ -89,26 +86,52 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           ctx.drawImage(img, 0, 0, width, height);
           const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
           setProfilePicture(dataUrl);
+
+          // Auto-save immediately to settings and trigger real-time sync across all areas
+          onSave({
+            ...settings,
+            profilePicture: dataUrl,
+          });
+          setSuccessMsg('✓ Photo uploaded & updated everywhere!');
+          setTimeout(() => setSuccessMsg(''), 4000);
         }
         setIsUploading(false);
       };
       img.onerror = () => {
         setIsUploading(false);
-        alert('Could not process the selected image. Please try another.');
+        alert('Could not decode this image. Please select a JPG, PNG, or WEBP photo.');
       };
       if (typeof event.target?.result === 'string') {
         img.src = event.target.result;
       }
     };
     reader.readAsDataURL(file);
+    e.target.value = '';
   };
 
   const handleApplyUrl = () => {
     if (imageUrlInput.trim()) {
-      setProfilePicture(imageUrlInput.trim());
+      const newUrl = imageUrlInput.trim();
+      setProfilePicture(newUrl);
       setImageUrlInput('');
       setShowUrlInput(false);
+      onSave({
+        ...settings,
+        profilePicture: newUrl,
+      });
+      setSuccessMsg('✓ Photo updated everywhere!');
+      setTimeout(() => setSuccessMsg(''), 4000);
     }
+  };
+
+  const handleRemovePhoto = () => {
+    setProfilePicture('');
+    onSave({
+      ...settings,
+      profilePicture: '',
+    });
+    setSuccessMsg('✓ Photo removed. Default monogram restored.');
+    setTimeout(() => setSuccessMsg(''), 4000);
   };
 
   const handleAddMember = () => {
@@ -210,11 +233,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
 
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
-                  {/* File Upload Input */}
+                  {/* File Upload Input with automated iOS/Mac JPEG conversion format accept */}
                   <input
                     type="file"
                     ref={fileInputRef}
-                    accept="image/*"
+                    accept="image/png, image/jpeg, image/jpg, image/webp"
                     onChange={handleImageFileChange}
                     className="hidden"
                   />
@@ -225,7 +248,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-colors"
                   >
                     <Upload className="w-3.5 h-3.5" />
-                    <span>{isUploading ? 'Compressing...' : 'Upload from Device'}</span>
+                    <span>{isUploading ? 'Saving...' : 'Upload from Device'}</span>
                   </button>
 
                   <button
@@ -240,7 +263,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   {profilePicture && (
                     <button
                       type="button"
-                      onClick={() => setProfilePicture('')}
+                      onClick={handleRemovePhoto}
                       className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-rose-600 hover:bg-rose-100/60 text-xs font-semibold transition-colors"
                       title="Reset to default initials monogram"
                     >
@@ -249,6 +272,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </button>
                   )}
                 </div>
+
+                {successMsg && (
+                  <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-1.5 animate-in fade-in duration-150">
+                    <span>✨</span>
+                    <span>{successMsg}</span>
+                  </div>
+                )}
 
                 {showUrlInput && (
                   <div className="flex items-center gap-2 pt-1">
