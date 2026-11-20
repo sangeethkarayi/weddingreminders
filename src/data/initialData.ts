@@ -1,0 +1,315 @@
+import { Guest, WeddingReminder, WeddingEvent, WeddingSettings } from '../types/wedding';
+
+// Default Wedding Dates set a few weeks in the future for great demo experience
+const today = new Date();
+const weddingDateObj = new Date(today.getTime() + 15 * 24 * 60 * 60 * 1000); // 15 days from now
+weddingDateObj.setHours(9, 30, 0, 0);
+
+const nightBeforeDateObj = new Date(weddingDateObj.getTime() - 24 * 60 * 60 * 1000);
+nightBeforeDateObj.setHours(18, 30, 0, 0);
+
+export const initialSettings: WeddingSettings = {
+  groomName: 'Rahul',
+  brideName: 'Anjali',
+  weddingDate: weddingDateObj.toISOString(),
+  nightBeforeDate: nightBeforeDateObj.toISOString(),
+  weddingVenue: 'The Royal Grand Palace & Convention Center, Hall A',
+  nightBeforeVenue: 'The Heritage Lawn & Banquet, Poolside',
+  currencySymbol: '₹',
+  familyMembers: [
+    'Rahul (Groom)',
+    'Anjali (Bride)',
+    'Father of Groom',
+    'Mother of Groom',
+    'Father of Bride',
+    'Mother of Bride',
+    'Brother of Groom',
+    'Sister of Bride'
+  ],
+  cloudSyncEnabled: false,
+  syncRoomCode: 'WED-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+};
+
+export const initialEvents: WeddingEvent[] = [
+  {
+    id: 'evt-1',
+    name: 'Sangeet, Ring Ceremony & Eve Dinner',
+    eventType: 'night_before',
+    date: nightBeforeDateObj.toISOString().split('T')[0],
+    startTime: '18:30',
+    endTime: '22:30',
+    venue: 'The Heritage Lawn & Banquet, Poolside',
+    locationAddress: 'Ring Road, Near City Center',
+    mapUrl: 'https://maps.google.com',
+    dressCode: 'Indo-Western / Festive Cocktail Attire',
+    notes: 'Dinner buffet opens at 7:45 PM. Musical performances and DJ night.'
+  },
+  {
+    id: 'evt-2',
+    name: 'Muhurtham & Sacred Wedding Ceremony',
+    eventType: 'wedding_day',
+    date: weddingDateObj.toISOString().split('T')[0],
+    startTime: '09:00',
+    endTime: '11:45',
+    venue: 'The Royal Grand Palace, Main Mandap Hall',
+    locationAddress: 'Grand Avenue, North Gate',
+    mapUrl: 'https://maps.google.com',
+    dressCode: 'Traditional Silk / Ethnic Wear',
+    notes: 'Auspicious Muhurtham time is 09:45 AM. Traditional breakfast available from 8:00 AM.'
+  },
+  {
+    id: 'evt-3',
+    name: 'Grand Wedding Feast (Sadya / Lunch)',
+    eventType: 'wedding_day',
+    date: weddingDateObj.toISOString().split('T')[0],
+    startTime: '12:00',
+    endTime: '15:30',
+    venue: 'The Royal Grand Palace, Banquet Dining Hall',
+    locationAddress: 'Grand Avenue, North Gate',
+    mapUrl: 'https://maps.google.com',
+    dressCode: 'Festive / Traditional',
+    notes: 'Grand feast for all wedding guests and families.'
+  }
+];
+
+export const initialReminders: WeddingReminder[] = [
+  {
+    id: 'rem-1',
+    title: 'Order Wedding Chain / Gold Mangalsutra & Rings',
+    category: 'jewelry',
+    dueDate: new Date(today.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    dueTime: '17:00',
+    priority: 'urgent',
+    status: 'in_progress',
+    assignedTo: 'Father of Groom',
+    cost: 85000,
+    paidAmount: 30000,
+    vendorName: 'Kalyan Jewellers / Local Goldsmith',
+    vendorPhone: '+91 98765 43210',
+    notes: 'Verify 916 BIS Hallmark engraving. Balance of ₹55,000 due at delivery.',
+    isSpecialReminder: true,
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'rem-2',
+    title: 'Payment for Camera & Cinematography Crew',
+    category: 'photography',
+    dueDate: new Date(today.getTime() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    dueTime: '14:00',
+    priority: 'high',
+    status: 'pending',
+    assignedTo: 'Rahul (Groom)',
+    cost: 75000,
+    paidAmount: 25000,
+    vendorName: 'Studio Memories (Cinematographer Arun)',
+    vendorPhone: '+91 91234 56789',
+    notes: 'Advance paid ₹25,000. Balance split: ₹25,000 before night-before event, ₹25,000 post-delivery.',
+    isSpecialReminder: true,
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'rem-3',
+    title: 'Wedding Attire & Suit/Saree Fitting Final Pickup',
+    category: 'attire',
+    dueDate: new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    priority: 'high',
+    status: 'pending',
+    assignedTo: 'Anjali (Bride)',
+    cost: 45000,
+    paidAmount: 45000,
+    vendorName: 'Heritage Silks & Designer Boutique',
+    vendorPhone: '+91 98451 23456',
+    notes: 'Pick up bridal saree blouse with matching tassles and groom sherwani/suit.',
+    isSpecialReminder: true,
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'rem-4',
+    title: 'Confirm Food Headcount with Night Before & Wedding Caterer',
+    category: 'catering',
+    dueDate: new Date(today.getTime() + 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    priority: 'urgent',
+    status: 'pending',
+    assignedTo: 'Father of Bride',
+    cost: 240000,
+    paidAmount: 80000,
+    vendorName: 'Royal Feast Caterers',
+    vendorPhone: '+91 99887 76655',
+    notes: 'Check total confirmed count for night before dinner and main day lunch.',
+    isSpecialReminder: true,
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'rem-5',
+    title: 'Floral Garlands (Varmala) & Pooja Samagri Delivery',
+    category: 'ritual',
+    dueDate: nightBeforeDateObj.toISOString().split('T')[0],
+    dueTime: '20:00',
+    priority: 'urgent',
+    status: 'pending',
+    assignedTo: 'Brother of Groom',
+    cost: 12000,
+    paidAmount: 5000,
+    vendorName: 'Fresh Bloom Florist & Pooja Store',
+    vendorPhone: '+91 94433 22110',
+    notes: 'Fresh rose and jasmine garlands must be delivered directly to the venue by 7 AM wedding morning.',
+    isSpecialReminder: false,
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'rem-6',
+    title: 'Bridal Mehendi & Makeup Artist Call Time',
+    category: 'makeup',
+    dueDate: nightBeforeDateObj.toISOString().split('T')[0],
+    dueTime: '14:00',
+    priority: 'high',
+    status: 'in_progress',
+    assignedTo: 'Sister of Bride',
+    cost: 25000,
+    paidAmount: 10000,
+    vendorName: 'Glow Bridal Artistry (Priya)',
+    vendorPhone: '+91 97766 55443',
+    notes: 'Artist arrives at bride suite at 2 PM for Mehendi; 5 AM on wedding morning for bridal styling.',
+    isSpecialReminder: false,
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'rem-7',
+    title: 'Reserve Family Cars & Hotel Rooms for Outstation Guests',
+    category: 'transport',
+    dueDate: new Date(today.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    priority: 'medium',
+    status: 'completed',
+    assignedTo: 'Brother of Groom',
+    cost: 35000,
+    paidAmount: 35000,
+    vendorName: 'City Cabs & Grand Residency Hotel',
+    vendorPhone: '+91 93322 11009',
+    notes: '8 rooms booked for outstation relatives from Bangalore & Mumbai.',
+    isSpecialReminder: false,
+    updatedAt: new Date().toISOString()
+  }
+];
+
+export const initialGuests: Guest[] = [
+  {
+    id: 'gst-1',
+    name: 'Suresh Kumar & Family',
+    phone: '+91 98401 23456',
+    relationship: 'Relatives',
+    side: 'groom',
+    invitedBy: 'Father of Groom',
+    invitationSent: true,
+    rsvpNightBefore: 'confirmed',
+    countNightBefore: 4,
+    rsvpWeddingDay: 'confirmed',
+    countWeddingDay: 4,
+    notes: 'Traveling from Chennai; needs accommodation assistance.',
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'gst-2',
+    name: 'Ramesh Menon & Sunitha',
+    phone: '+91 98200 87654',
+    relationship: 'Family Friends',
+    side: 'bride',
+    invitedBy: 'Father of Bride',
+    invitationSent: true,
+    rsvpNightBefore: 'confirmed',
+    countNightBefore: 2,
+    rsvpWeddingDay: 'confirmed',
+    countWeddingDay: 2,
+    notes: 'Arriving night before by flight.',
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'gst-3',
+    name: 'Vikram Joshi (College Best Friend)',
+    phone: '+91 99123 44556',
+    relationship: 'Friend',
+    side: 'groom',
+    invitedBy: 'Rahul (Groom)',
+    invitationSent: true,
+    rsvpNightBefore: 'confirmed',
+    countNightBefore: 2,
+    rsvpWeddingDay: 'confirmed',
+    countWeddingDay: 2,
+    notes: 'Performing in the Sangeet dance!',
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'gst-4',
+    name: 'Sneha Patel & Dr. Mehra',
+    phone: '+91 97234 11223',
+    relationship: 'Colleagues',
+    side: 'bride',
+    invitedBy: 'Anjali (Bride)',
+    invitationSent: true,
+    rsvpNightBefore: 'declined',
+    countNightBefore: 0,
+    rsvpWeddingDay: 'confirmed',
+    countWeddingDay: 2,
+    notes: 'Can only attend the main wedding day ceremony and lunch.',
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'gst-5',
+    name: 'Shankar Iyer & Family',
+    phone: '+91 94455 66778',
+    relationship: 'Uncle & Aunt',
+    side: 'groom',
+    invitedBy: 'Mother of Groom',
+    invitationSent: true,
+    rsvpNightBefore: 'confirmed',
+    countNightBefore: 3,
+    rsvpWeddingDay: 'confirmed',
+    countWeddingDay: 3,
+    notes: 'Confirmed 3 heads for both events.',
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'gst-6',
+    name: 'Deepak Varma',
+    phone: '+91 98877 66554',
+    relationship: 'Friend',
+    side: 'groom',
+    invitedBy: 'Rahul (Groom)',
+    invitationSent: true,
+    rsvpNightBefore: 'pending',
+    countNightBefore: 1,
+    rsvpWeddingDay: 'pending',
+    countWeddingDay: 1,
+    notes: 'Waiting for flight confirmation.',
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'gst-7',
+    name: 'Lakshmi Narayanan & Daughters',
+    phone: '+91 96655 44332',
+    relationship: 'Relatives',
+    side: 'bride',
+    invitedBy: 'Mother of Bride',
+    invitationSent: true,
+    rsvpNightBefore: 'confirmed',
+    countNightBefore: 3,
+    rsvpWeddingDay: 'confirmed',
+    countWeddingDay: 3,
+    notes: 'Will help with traditional bridal flower braiding.',
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'gst-8',
+    name: 'Arvind Sharma (Tech Team)',
+    phone: '+91 91122 33445',
+    relationship: 'Colleague',
+    side: 'groom',
+    invitedBy: 'Rahul (Groom)',
+    invitationSent: false,
+    rsvpNightBefore: 'pending',
+    countNightBefore: 2,
+    rsvpWeddingDay: 'pending',
+    countWeddingDay: 2,
+    notes: 'Need to send wedding invitation card via WhatsApp.',
+    updatedAt: new Date().toISOString()
+  }
+];
