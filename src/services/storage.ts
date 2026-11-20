@@ -182,6 +182,7 @@ export const syncToCloud = async (
     guests: Guest[];
     reminders: WeddingReminder[];
     events: WeddingEvent[];
+    budget?: BudgetItem[];
   }
 ): Promise<boolean> => {
   if (!payload.settings.cloudSyncEnabled || !firestoreDb) {

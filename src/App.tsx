@@ -76,6 +76,7 @@ export function App() {
         reminders: newReminders,
         events: newEvents,
         settings: newSettings,
+        budget: newBudget,
       });
     }
   }, []);
@@ -275,6 +276,7 @@ export function App() {
       reminders,
       events,
       settings,
+      budget: budgetItems,
     });
   };
 
