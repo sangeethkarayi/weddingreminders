@@ -148,10 +148,24 @@ export const TimelineEvents: React.FC<TimelineEventsProps> = ({
                   <span>•</span>
                   <span>{new Date(evt.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
                   <span>•</span>
-                  <span className="flex items-center gap-1 text-slate-600">
-                    <MapPin className="w-3.5 h-3.5 text-amber-600" />
-                    {evt.venue}
-                  </span>
+                  {evt.mapUrl ? (
+                    <a
+                      href={evt.mapUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-amber-700 hover:text-amber-900 font-semibold underline decoration-amber-400/60"
+                      title="Open location in Google Maps"
+                    >
+                      <MapPin className="w-3.5 h-3.5 text-amber-600" />
+                      <span>{evt.venue}</span>
+                      <ExternalLink className="w-3 h-3 opacity-70" />
+                    </a>
+                  ) : (
+                    <span className="flex items-center gap-1 text-slate-600">
+                      <MapPin className="w-3.5 h-3.5 text-amber-600" />
+                      {evt.venue}
+                    </span>
+                  )}
                 </div>
 
                 {evt.dressCode && (

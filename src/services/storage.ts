@@ -4,10 +4,10 @@ import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getFirestore, doc, onSnapshot, setDoc, Firestore } from 'firebase/firestore';
 
 const STORAGE_KEYS = {
-  GUESTS: 'wedding_guests_v2',
-  REMINDERS: 'wedding_reminders_v2',
-  EVENTS: 'wedding_events_v2',
-  SETTINGS: 'wedding_settings_v2',
+  GUESTS: 'wedding_guests_v3',
+  REMINDERS: 'wedding_reminders_v3',
+  EVENTS: 'wedding_events_v3',
+  SETTINGS: 'wedding_settings_v3',
 };
 
 let firebaseApp: FirebaseApp | null = null;
@@ -20,7 +20,7 @@ export const getLocalSettings = (): WeddingSettings => {
     const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
     if (!data) return initialSettings;
     const parsed = JSON.parse(data);
-    if (parsed.groomName === 'Rahul' || !parsed.groomName) {
+    if (!parsed.weddingMapUrl || parsed.groomName === 'Rahul') {
       return initialSettings;
     }
     return parsed;
@@ -188,13 +188,14 @@ export const exportGuestsToCSV = (guests: Guest[], settings: WeddingSettings) =>
     'Guest Name',
     'Phone',
     'Side',
-    'Invited By (Host)',
+    'Main Relative / Head',
+    'Sub-Category (Circle)',
     'Relationship',
     'Invitation Sent',
-    'Night Before RSVP',
-    'Night Before Headcount',
-    'Wedding Day RSVP',
-    'Wedding Day Headcount',
+    '19 Dec (Bride Home) RSVP',
+    '19 Dec Headcount',
+    '20 Dec (Wedding Day) RSVP',
+    '20 Dec Headcount',
     'Notes'
   ];
 
@@ -203,6 +204,7 @@ export const exportGuestsToCSV = (guests: Guest[], settings: WeddingSettings) =>
     `"${g.phone || ''}"`,
     `"${g.side}"`,
     `"${g.invitedBy.replace(/"/g, '""')}"`,
+    `"${(g.category || 'General').replace(/"/g, '""')}"`,
     `"${g.relationship}"`,
     g.invitationSent ? 'Yes' : 'No',
     `"${g.rsvpNightBefore}"`,

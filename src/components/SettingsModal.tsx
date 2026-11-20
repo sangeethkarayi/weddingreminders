@@ -20,7 +20,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [weddingDate, setWeddingDate] = useState(settings.weddingDate.substring(0, 16));
   const [nightBeforeDate, setNightBeforeDate] = useState(settings.nightBeforeDate.substring(0, 16));
   const [weddingVenue, setWeddingVenue] = useState(settings.weddingVenue);
+  const [weddingMapUrl, setWeddingMapUrl] = useState(settings.weddingMapUrl || 'https://maps.app.goo.gl/GqVMveX52eWPWwGf9');
   const [nightBeforeVenue, setNightBeforeVenue] = useState(settings.nightBeforeVenue);
+  const [nightBeforeMapUrl, setNightBeforeMapUrl] = useState(settings.nightBeforeMapUrl || 'https://maps.app.goo.gl/kuf1hXdppVXVykks9');
   const [currencySymbol, setCurrencySymbol] = useState(settings.currencySymbol || '₹');
   const [familyMembers, setFamilyMembers] = useState<string[]>([...settings.familyMembers]);
   const [newMemberName, setNewMemberName] = useState('');
@@ -49,7 +51,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       weddingDate: new Date(weddingDate).toISOString(),
       nightBeforeDate: new Date(nightBeforeDate).toISOString(),
       weddingVenue: weddingVenue.trim(),
+      weddingMapUrl: weddingMapUrl.trim(),
       nightBeforeVenue: nightBeforeVenue.trim(),
+      nightBeforeMapUrl: nightBeforeMapUrl.trim(),
       currencySymbol: currencySymbol.trim() || '₹',
       familyMembers,
     });
@@ -145,31 +149,59 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
 
           {/* Venues */}
-          <div className="space-y-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                Main Wedding Ceremony & Lunch Venue
+          <div className="space-y-4">
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+              <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
+                💍 20 Dec Wedding Ceremony & Lunch Venue
               </label>
               <input
                 type="text"
                 required
                 value={weddingVenue}
                 onChange={(e) => setWeddingVenue(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm"
+                placeholder="e.g. Wedding Hall (Main Ceremony)"
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm bg-white font-medium"
               />
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1 flex items-center gap-1">
+                  <MapPin className="w-3 h-3 text-rose-500" />
+                  <span>Google Maps Location Link:</span>
+                </label>
+                <input
+                  type="url"
+                  value={weddingMapUrl}
+                  onChange={(e) => setWeddingMapUrl(e.target.value)}
+                  placeholder="https://maps.app.goo.gl/..."
+                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs bg-white font-mono text-slate-700"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                Night Before Celebration Venue
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+              <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
+                🌙 19 Dec Pre-Wedding Celebration Venue
               </label>
               <input
                 type="text"
                 required
                 value={nightBeforeVenue}
                 onChange={(e) => setNightBeforeVenue(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm"
+                placeholder="e.g. Bride's Home (19 Dec Function)"
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm bg-white font-medium"
               />
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1 flex items-center gap-1">
+                  <MapPin className="w-3 h-3 text-indigo-500" />
+                  <span>Google Maps Location Link:</span>
+                </label>
+                <input
+                  type="url"
+                  value={nightBeforeMapUrl}
+                  onChange={(e) => setNightBeforeMapUrl(e.target.value)}
+                  placeholder="https://maps.app.goo.gl/..."
+                  className="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs bg-white font-mono text-slate-700"
+                />
+              </div>
             </div>
           </div>
 

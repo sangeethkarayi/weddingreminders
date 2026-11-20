@@ -31,6 +31,8 @@ export function App() {
   // Modals
   const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
   const [guestToEdit, setGuestToEdit] = useState<Guest | null>(null);
+  const [modalDefaultInvitedBy, setModalDefaultInvitedBy] = useState<string | undefined>(undefined);
+  const [modalDefaultCategory, setModalDefaultCategory] = useState<string | undefined>(undefined);
 
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
   const [reminderToEdit, setReminderToEdit] = useState<WeddingReminder | null>(null);
@@ -251,8 +253,10 @@ export function App() {
             <GuestList
               guests={guests}
               settings={settings}
-              onAddGuest={() => {
+              onAddGuest={(defaultInviter, defaultCategory) => {
                 setGuestToEdit(null);
+                setModalDefaultInvitedBy(defaultInviter || selectedInviterFilter);
+                setModalDefaultCategory(defaultCategory);
                 setIsGuestModalOpen(true);
               }}
               onEditGuest={(guest) => {
@@ -317,11 +321,14 @@ export function App() {
         onClose={() => {
           setIsGuestModalOpen(false);
           setGuestToEdit(null);
+          setModalDefaultInvitedBy(undefined);
+          setModalDefaultCategory(undefined);
         }}
         onSave={handleSaveGuest}
         guestToEdit={guestToEdit}
         settings={settings}
-        defaultInvitedBy={selectedInviterFilter}
+        defaultInvitedBy={modalDefaultInvitedBy || selectedInviterFilter}
+        defaultCategory={modalDefaultCategory}
       />
 
       <ReminderModal

@@ -19,18 +19,19 @@ export interface Guest {
   id: string;
   name: string;
   phone: string;
-  relationship: string; // e.g. "Family", "Relative", "Friend", "Colleague", "Neighbor"
+  relationship: string; // e.g. "Relative", "Close Friend", "Colleague", "Neighbor"
   side: 'groom' | 'bride' | 'mutual';
-  invitedBy: string; // e.g. "Groom", "Bride", "Groom's Father", "Groom's Mother", etc.
+  invitedBy: string; // Main Relative / Head (e.g. "Father", "Mother", "Jishnu (Groom)", "Swathi (Bride)", "Brother")
+  category: string; // Sub-Category inside the Head (e.g. "Friends", "Coworkers", "Relatives", "Neighbors", "VIPs")
   invitationSent: boolean;
   
-  // Night Before Event (Eve / Sangeet / Reception)
+  // 19 Dec Event (Bride's Home Function)
   rsvpNightBefore: RSVPStatus;
-  countNightBefore: number; // Headcount attending night before
+  countNightBefore: number; // Headcount attending 19 Dec
   
-  // Main Wedding Day (Muhurtham / Ceremony)
+  // 20 Dec Event (Main Wedding Day Ceremony)
   rsvpWeddingDay: RSVPStatus;
-  countWeddingDay: number; // Headcount attending wedding day
+  countWeddingDay: number; // Headcount attending 20 Dec
   
   notes?: string;
   updatedAt: string;
@@ -50,7 +51,7 @@ export interface WeddingReminder {
   vendorName?: string;
   vendorPhone?: string;
   notes?: string;
-  isSpecialReminder?: boolean; // Highlighted special reminder like 'Order for chain', 'Camera payment'
+  isSpecialReminder?: boolean;
   updatedAt: string;
 }
 
@@ -75,7 +76,7 @@ export interface FirebaseSyncConfig {
   storageBucket: string;
   messagingSenderId: string;
   appId: string;
-  syncCode?: string; // Unique shared room code for the family
+  syncCode?: string;
 }
 
 export interface WeddingSettings {
@@ -84,7 +85,9 @@ export interface WeddingSettings {
   weddingDate: string; // YYYY-MM-DDTHH:mm
   nightBeforeDate: string; // YYYY-MM-DDTHH:mm
   weddingVenue: string;
+  weddingMapUrl: string; // e.g. https://maps.app.goo.gl/GqVMveX52eWPWwGf9
   nightBeforeVenue: string;
+  nightBeforeMapUrl: string; // e.g. https://maps.app.goo.gl/kuf1hXdppVXVykks9
   currencySymbol: string;
   familyMembers: string[];
   firebaseConfig?: FirebaseSyncConfig;

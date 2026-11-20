@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Phone, Users, Moon, Sun, Check, MessageSquare, AlertCircle } from 'lucide-react';
+import { X, User, Phone, Users, Moon, Sun, Check, FolderTree } from 'lucide-react';
 import { Guest, RSVPStatus, WeddingSettings } from '../types/wedding';
 
 interface GuestModalProps {
@@ -9,7 +9,10 @@ interface GuestModalProps {
   guestToEdit?: Guest | null;
   settings: WeddingSettings;
   defaultInvitedBy?: string;
+  defaultCategory?: string;
 }
+
+const COMMON_CATEGORIES = ['Friends', 'Coworkers', 'Relatives', 'Neighbors', 'VIPs / Family Friends'];
 
 export const GuestModal: React.FC<GuestModalProps> = ({
   isOpen,
@@ -17,22 +20,31 @@ export const GuestModal: React.FC<GuestModalProps> = ({
   onSave,
   guestToEdit,
   settings,
-  defaultInvitedBy
+  defaultInvitedBy,
+  defaultCategory,
 }) => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [relationship, setRelationship] = useState('Relative');
   const [side, setSide] = useState<'groom' | 'bride' | 'mutual'>('groom');
+  
+  // Main Relative / Head (e.g. Father, Mother, Jishnu, Swathi)
   const [invitedBy, setInvitedBy] = useState('');
   const [customInviter, setCustomInviter] = useState('');
   const [isCustomInviter, setIsCustomInviter] = useState(false);
+
+  // Sub-Category inside the Head (e.g. Friends, Coworkers, Relatives)
+  const [category, setCategory] = useState('Friends');
+  const [customCategory, setCustomCategory] = useState('');
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
+
   const [invitationSent, setInvitationSent] = useState(true);
 
-  // Night Before
+  // 19 Dec Event (Bride's Home Function)
   const [rsvpNightBefore, setRsvpNightBefore] = useState<RSVPStatus>('confirmed');
   const [countNightBefore, setCountNightBefore] = useState<number>(2);
 
-  // Wedding Day
+  // 20 Dec Event (Wedding Day Ceremony)
   const [rsvpWeddingDay, setRsvpWeddingDay] = useState<RSVPStatus>('confirmed');
   const [countWeddingDay, setCountWeddingDay] = useState<number>(2);
 
@@ -54,6 +66,15 @@ export const GuestModal: React.FC<GuestModalProps> = ({
         setIsCustomInviter(true);
       }
 
+      if (COMMON_CATEGORIES.includes(guestToEdit.category)) {
+        setCategory(guestToEdit.category);
+        setIsCustomCategory(false);
+      } else {
+        setCategory('Other');
+        setCustomCategory(guestToEdit.category || 'General');
+        setIsCustomCategory(true);
+      }
+
       setInvitationSent(guestToEdit.invitationSent);
       setRsvpNightBefore(guestToEdit.rsvpNightBefore);
       setCountNightBefore(guestToEdit.countNightBefore ?? 1);
@@ -66,12 +87,19 @@ export const GuestModal: React.FC<GuestModalProps> = ({
       setPhone('');
       setRelationship('Relative');
       setSide('groom');
+      
       const initialInvited = defaultInvitedBy && settings.familyMembers.includes(defaultInvitedBy)
         ? defaultInvitedBy
-        : settings.familyMembers[0] || 'Rahul (Groom)';
+        : settings.familyMembers[0] || 'Father';
       setInvitedBy(initialInvited);
       setIsCustomInviter(false);
       setCustomInviter('');
+
+      const initCat = defaultCategory || 'Friends';
+      setCategory(initCat);
+      setIsCustomCategory(false);
+      setCustomCategory('');
+
       setInvitationSent(false);
       setRsvpNightBefore('confirmed');
       setCountNightBefore(2);
@@ -79,7 +107,7 @@ export const GuestModal: React.FC<GuestModalProps> = ({
       setCountWeddingDay(2);
       setNotes('');
     }
-  }, [guestToEdit, isOpen, defaultInvitedBy, settings.familyMembers]);
+  }, [guestToEdit, isOpen, defaultInvitedBy, defaultCategory, settings.familyMembers]);
 
   if (!isOpen) return null;
 
@@ -88,6 +116,7 @@ export const GuestModal: React.FC<GuestModalProps> = ({
     if (!name.trim()) return;
 
     const finalInvitedBy = isCustomInviter ? (customInviter.trim() || 'Family') : invitedBy;
+    const finalCategory = isCustomCategory ? (customCategory.trim() || 'General') : category;
 
     const newGuest: Guest = {
       id: guestToEdit ? guestToEdit.id : `gst-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
@@ -96,6 +125,7 @@ export const GuestModal: React.FC<GuestModalProps> = ({
       relationship,
       side,
       invitedBy: finalInvitedBy,
+      category: finalCategory,
       invitationSent,
       rsvpNightBefore,
       countNightBefore: rsvpNightBefore === 'declined' ? 0 : Number(countNightBefore) || 1,
@@ -120,9 +150,9 @@ export const GuestModal: React.FC<GuestModalProps> = ({
             </div>
             <div>
               <h3 className="text-lg font-bold text-slate-800">
-                {guestToEdit ? 'Edit Guest & Attendance' : 'Add New Guest / Family'}
+                {guestToEdit ? 'Edit Guest Details' : 'Add Guest to Category'}
               </h3>
-              <p className="text-xs text-slate-500">Track invitations and headcount for both events</p>
+              <p className="text-xs text-slate-500">Group by Head Relative and Circle with 19 & 20 Dec confirmations</p>
             </div>
           </div>
           <button
@@ -135,6 +165,88 @@ export const GuestModal: React.FC<GuestModalProps> = ({
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
+          {/* Main Relative Head & Sub-Category */}
+          <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200/60 space-y-3">
+            <span className="block text-xs font-bold text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
+              <FolderTree className="w-4 h-4 text-amber-700" />
+              <span>Head Relative & Category Assignment</span>
+            </span>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Main Relative Head */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                  Main Relative / Head *
+                </label>
+                <select
+                  value={isCustomInviter ? 'Other' : invitedBy}
+                  onChange={(e) => {
+                    if (e.target.value === 'Other') {
+                      setIsCustomInviter(true);
+                    } else {
+                      setIsCustomInviter(false);
+                      setInvitedBy(e.target.value);
+                    }
+                  }}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500/20"
+                >
+                  {settings.familyMembers.map((member) => (
+                    <option key={member} value={member}>
+                      {member}
+                    </option>
+                  ))}
+                  <option value="Other">+ Custom Head</option>
+                </select>
+
+                {isCustomInviter && (
+                  <input
+                    type="text"
+                    placeholder="Enter head name (e.g. Uncle)"
+                    value={customInviter}
+                    onChange={(e) => setCustomInviter(e.target.value)}
+                    className="mt-1.5 w-full px-3 py-1.5 rounded-xl border border-amber-300 text-xs bg-white"
+                  />
+                )}
+              </div>
+
+              {/* Sub-Category inside Head */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 uppercase mb-1">
+                  Category inside {invitedBy || 'Head'} *
+                </label>
+                <select
+                  value={isCustomCategory ? 'Other' : category}
+                  onChange={(e) => {
+                    if (e.target.value === 'Other') {
+                      setIsCustomCategory(true);
+                    } else {
+                      setIsCustomCategory(false);
+                      setCategory(e.target.value);
+                    }
+                  }}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500/20"
+                >
+                  {COMMON_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                  <option value="Other">+ Custom Category</option>
+                </select>
+
+                {isCustomCategory && (
+                  <input
+                    type="text"
+                    placeholder="e.g. Badminton Club, Tech Friends"
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value)}
+                    className="mt-1.5 w-full px-3 py-1.5 rounded-xl border border-amber-300 text-xs bg-white"
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Guest Name & Phone */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -149,7 +261,7 @@ export const GuestModal: React.FC<GuestModalProps> = ({
                   placeholder="e.g. Suresh Kumar & Family"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 text-sm"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 text-sm font-medium"
                 />
               </div>
             </div>
@@ -171,43 +283,8 @@ export const GuestModal: React.FC<GuestModalProps> = ({
             </div>
           </div>
 
-          {/* Invited By (Family Member) & Side */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Invited By (Host Member List) *
-              </label>
-              <select
-                value={isCustomInviter ? 'Other' : invitedBy}
-                onChange={(e) => {
-                  if (e.target.value === 'Other') {
-                    setIsCustomInviter(true);
-                  } else {
-                    setIsCustomInviter(false);
-                    setInvitedBy(e.target.value);
-                  }
-                }}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 text-sm bg-white"
-              >
-                {settings.familyMembers.map((member) => (
-                  <option key={member} value={member}>
-                    {member}
-                  </option>
-                ))}
-                <option value="Other">+ Custom Member / Host</option>
-              </select>
-
-              {isCustomInviter && (
-                <input
-                  type="text"
-                  placeholder="Enter custom host name (e.g. Uncle Vijay)"
-                  value={customInviter}
-                  onChange={(e) => setCustomInviter(e.target.value)}
-                  className="mt-2 w-full px-3.5 py-2 rounded-xl border border-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 text-sm bg-amber-50/30"
-                />
-              )}
-            </div>
-
+          {/* Side & Relationship */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                 Side
@@ -215,56 +292,46 @@ export const GuestModal: React.FC<GuestModalProps> = ({
               <select
                 value={side}
                 onChange={(e) => setSide(e.target.value as any)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 text-sm bg-white"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500/20 text-sm bg-white"
               >
-                <option value="groom">Groom's Side</option>
-                <option value="bride">Bride's Side</option>
+                <option value="groom">Groom's Side (Jishnu)</option>
+                <option value="bride">Bride's Side (Swathi)</option>
                 <option value="mutual">Mutual</option>
               </select>
             </div>
-          </div>
 
-          {/* Relationship & Invitation Status */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Relationship
+                Relationship Tag
               </label>
               <input
                 type="text"
-                placeholder="e.g. Relatives, Friend, Colleague"
+                placeholder="e.g. School Friend, Cousin, Colleague"
                 value={relationship}
                 onChange={(e) => setRelationship(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 text-sm"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm"
               />
-            </div>
-
-            <div className="flex flex-col justify-end">
-              <label className="relative flex items-center gap-3 p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={invitationSent}
-                  onChange={(e) => setInvitationSent(e.target.checked)}
-                  className="w-4 h-4 text-rose-600 rounded border-slate-300 focus:ring-rose-500"
-                />
-                <span className="text-xs font-semibold text-slate-700">Invitation Card / Link Sent</span>
-              </label>
             </div>
           </div>
 
-          {/* Event 1: Night Before Attendance & Headcount */}
-          <div className="p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100 space-y-3">
+          {/* Event 1: 19 Dec Pre-Wedding at Bride's Home */}
+          <div className="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Moon className="w-4 h-4 text-indigo-600" />
-                <span className="text-sm font-bold text-indigo-950">Night Before Event (Sangeet / Eve)</span>
+                <span className="text-sm font-bold text-indigo-950">
+                  19 Dec: Function at Bride's Home
+                </span>
               </div>
+              <span className="text-[11px] text-indigo-700 font-semibold bg-indigo-100/70 px-2 py-0.5 rounded-md">
+                Eve Celebration
+              </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-[11px] font-semibold text-indigo-900 uppercase tracking-wide mb-1">
-                  RSVP Status
+                  19 Dec Attendance
                 </label>
                 <div className="flex rounded-lg p-1 bg-white border border-indigo-200 gap-1 text-xs font-semibold">
                   <button
@@ -305,7 +372,7 @@ export const GuestModal: React.FC<GuestModalProps> = ({
 
               <div>
                 <label className="block text-[11px] font-semibold text-indigo-900 uppercase tracking-wide mb-1">
-                  Number of People (Headcount)
+                  Attending Heads on 19 Dec
                 </label>
                 <div className="flex items-center gap-2">
                   <button
@@ -337,19 +404,24 @@ export const GuestModal: React.FC<GuestModalProps> = ({
             </div>
           </div>
 
-          {/* Event 2: Wedding Day Attendance & Headcount */}
-          <div className="p-4 rounded-2xl bg-rose-50/50 border border-rose-100 space-y-3">
+          {/* Event 2: 20 Dec Wedding Day at Wedding Hall */}
+          <div className="p-4 rounded-2xl bg-rose-50/60 border border-rose-100 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sun className="w-4 h-4 text-rose-600" />
-                <span className="text-sm font-bold text-rose-950">Wedding Day (Muhurtham & Lunch)</span>
+                <span className="text-sm font-bold text-rose-950">
+                  20 Dec: Wedding Day (Ceremony & Feast)
+                </span>
               </div>
+              <span className="text-[11px] text-rose-700 font-semibold bg-rose-100/70 px-2 py-0.5 rounded-md">
+                Main Ceremony
+              </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-[11px] font-semibold text-rose-900 uppercase tracking-wide mb-1">
-                  RSVP Status
+                  20 Dec Attendance
                 </label>
                 <div className="flex rounded-lg p-1 bg-white border border-rose-200 gap-1 text-xs font-semibold">
                   <button
@@ -390,7 +462,7 @@ export const GuestModal: React.FC<GuestModalProps> = ({
 
               <div>
                 <label className="block text-[11px] font-semibold text-rose-900 uppercase tracking-wide mb-1">
-                  Number of People (Headcount)
+                  Attending Heads on 20 Dec
                 </label>
                 <div className="flex items-center gap-2">
                   <button
@@ -422,22 +494,22 @@ export const GuestModal: React.FC<GuestModalProps> = ({
             </div>
           </div>
 
-          {/* Notes */}
+          {/* Notes & Invitation Sent */}
           <div>
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Special Notes / Needs
+              Special Notes
             </label>
             <textarea
               rows={2}
-              placeholder="e.g. Traveling from Mumbai, needs room arrangement, vegetarian feast..."
+              placeholder="e.g. Traveling from Mumbai, needs room allocation..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 text-sm resize-none"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-rose-500/20 text-sm resize-none"
             />
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
             <button
               type="button"
               onClick={onClose}
@@ -449,7 +521,7 @@ export const GuestModal: React.FC<GuestModalProps> = ({
               type="submit"
               className="px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-sm shadow-md shadow-rose-600/20 transition-colors"
             >
-              {guestToEdit ? 'Save Changes' : 'Add Guest'}
+              {guestToEdit ? 'Save Changes' : 'Add Guest to Category'}
             </button>
           </div>
         </form>

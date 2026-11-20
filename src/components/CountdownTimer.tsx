@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Calendar, Sparkles, MapPin } from 'lucide-react';
+import { Clock, Calendar, Sparkles, MapPin, ExternalLink } from 'lucide-react';
 import { WeddingSettings } from '../types/wedding';
 
 interface CountdownTimerProps {
@@ -61,6 +61,11 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ settings, onOpen
     year: 'numeric',
   });
 
+  const currentVenue = activeTarget === 'wedding' ? settings.weddingVenue : settings.nightBeforeVenue;
+  const currentMapUrl = activeTarget === 'wedding'
+    ? (settings.weddingMapUrl || 'https://maps.app.goo.gl/GqVMveX52eWPWwGf9')
+    : (settings.nightBeforeMapUrl || 'https://maps.app.goo.gl/kuf1hXdppVXVykks9');
+
   return (
     <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-rose-900 via-rose-800 to-rose-950 text-white shadow-xl p-6 sm:p-8 border border-rose-700/50">
       {/* Decorative floral/golden glow background elements */}
@@ -84,10 +89,17 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ settings, onOpen
               <Calendar className="w-4 h-4 text-amber-300" />
               <span>{activeTarget === 'wedding' ? weddingDateFormatted : nightBeforeFormatted}</span>
             </div>
-            <div className="flex items-center gap-1.5 max-w-xs truncate" title={activeTarget === 'wedding' ? settings.weddingVenue : settings.nightBeforeVenue}>
+            <a
+              href={currentMapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 max-w-sm truncate text-amber-200 hover:text-white transition-colors underline decoration-amber-400/50 underline-offset-2"
+              title="Open Location in Google Maps"
+            >
               <MapPin className="w-4 h-4 text-amber-300 flex-shrink-0" />
-              <span className="truncate">{activeTarget === 'wedding' ? settings.weddingVenue : settings.nightBeforeVenue}</span>
-            </div>
+              <span className="truncate">{currentVenue}</span>
+              <ExternalLink className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 opacity-80" />
+            </a>
           </div>
         </div>
 
@@ -103,7 +115,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ settings, onOpen
                   : 'text-rose-200 hover:text-white'
               }`}
             >
-              🌙 Night Before
+              🌙 19 Dec (Bride's Home)
             </button>
             <button
               onClick={() => setActiveTarget('wedding')}
@@ -113,7 +125,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({ settings, onOpen
                   : 'text-rose-200 hover:text-white'
               }`}
             >
-              💍 Wedding Day
+              💍 20 Dec (Wedding Day)
             </button>
           </div>
 
