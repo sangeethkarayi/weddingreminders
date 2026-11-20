@@ -1,24 +1,20 @@
 import { Guest, WeddingReminder, WeddingEvent, WeddingSettings } from '../types/wedding';
 
-// Default Wedding Dates set a few weeks in the future for great demo experience
-const today = new Date();
-const weddingDateObj = new Date(today.getTime() + 15 * 24 * 60 * 60 * 1000); // 15 days from now
-weddingDateObj.setHours(9, 30, 0, 0);
-
-const nightBeforeDateObj = new Date(weddingDateObj.getTime() - 24 * 60 * 60 * 1000);
-nightBeforeDateObj.setHours(18, 30, 0, 0);
+// Wedding Date: Dec 20, 2026
+const weddingDateObj = new Date('2026-12-20T09:30:00');
+const nightBeforeDateObj = new Date('2026-12-19T18:30:00');
 
 export const initialSettings: WeddingSettings = {
-  groomName: 'Rahul',
-  brideName: 'Anjali',
+  groomName: 'Jishnu',
+  brideName: 'Swathi',
   weddingDate: weddingDateObj.toISOString(),
   nightBeforeDate: nightBeforeDateObj.toISOString(),
-  weddingVenue: 'The Royal Grand Palace & Convention Center, Hall A',
+  weddingVenue: 'The Royal Grand Palace & Convention Center, Main Mandap Hall',
   nightBeforeVenue: 'The Heritage Lawn & Banquet, Poolside',
   currencySymbol: '₹',
   familyMembers: [
-    'Rahul (Groom)',
-    'Anjali (Bride)',
+    'Jishnu (Groom)',
+    'Swathi (Bride)',
     'Father of Groom',
     'Mother of Groom',
     'Father of Bride',
@@ -27,7 +23,7 @@ export const initialSettings: WeddingSettings = {
     'Sister of Bride'
   ],
   cloudSyncEnabled: false,
-  syncRoomCode: 'WED-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+  syncRoomCode: 'WED-JISHNU-SWATHI',
 };
 
 export const initialEvents: WeddingEvent[] = [
@@ -35,7 +31,7 @@ export const initialEvents: WeddingEvent[] = [
     id: 'evt-1',
     name: 'Sangeet, Ring Ceremony & Eve Dinner',
     eventType: 'night_before',
-    date: nightBeforeDateObj.toISOString().split('T')[0],
+    date: '2026-12-19',
     startTime: '18:30',
     endTime: '22:30',
     venue: 'The Heritage Lawn & Banquet, Poolside',
@@ -48,7 +44,7 @@ export const initialEvents: WeddingEvent[] = [
     id: 'evt-2',
     name: 'Muhurtham & Sacred Wedding Ceremony',
     eventType: 'wedding_day',
-    date: weddingDateObj.toISOString().split('T')[0],
+    date: '2026-12-20',
     startTime: '09:00',
     endTime: '11:45',
     venue: 'The Royal Grand Palace, Main Mandap Hall',
@@ -61,7 +57,7 @@ export const initialEvents: WeddingEvent[] = [
     id: 'evt-3',
     name: 'Grand Wedding Feast (Sadya / Lunch)',
     eventType: 'wedding_day',
-    date: weddingDateObj.toISOString().split('T')[0],
+    date: '2026-12-20',
     startTime: '12:00',
     endTime: '15:30',
     venue: 'The Royal Grand Palace, Banquet Dining Hall',
@@ -77,7 +73,7 @@ export const initialReminders: WeddingReminder[] = [
     id: 'rem-1',
     title: 'Order Wedding Chain / Gold Mangalsutra & Rings',
     category: 'jewelry',
-    dueDate: new Date(today.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    dueDate: '2026-11-25',
     dueTime: '17:00',
     priority: 'urgent',
     status: 'in_progress',
@@ -94,11 +90,11 @@ export const initialReminders: WeddingReminder[] = [
     id: 'rem-2',
     title: 'Payment for Camera & Cinematography Crew',
     category: 'photography',
-    dueDate: new Date(today.getTime() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    dueDate: '2026-12-05',
     dueTime: '14:00',
     priority: 'high',
     status: 'pending',
-    assignedTo: 'Rahul (Groom)',
+    assignedTo: 'Jishnu (Groom)',
     cost: 75000,
     paidAmount: 25000,
     vendorName: 'Studio Memories (Cinematographer Arun)',
@@ -111,10 +107,10 @@ export const initialReminders: WeddingReminder[] = [
     id: 'rem-3',
     title: 'Wedding Attire & Suit/Saree Fitting Final Pickup',
     category: 'attire',
-    dueDate: new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    dueDate: '2026-12-10',
     priority: 'high',
     status: 'pending',
-    assignedTo: 'Anjali (Bride)',
+    assignedTo: 'Swathi (Bride)',
     cost: 45000,
     paidAmount: 45000,
     vendorName: 'Heritage Silks & Designer Boutique',
@@ -127,7 +123,7 @@ export const initialReminders: WeddingReminder[] = [
     id: 'rem-4',
     title: 'Confirm Food Headcount with Night Before & Wedding Caterer',
     category: 'catering',
-    dueDate: new Date(today.getTime() + 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    dueDate: '2026-12-14',
     priority: 'urgent',
     status: 'pending',
     assignedTo: 'Father of Bride',
@@ -143,7 +139,7 @@ export const initialReminders: WeddingReminder[] = [
     id: 'rem-5',
     title: 'Floral Garlands (Varmala) & Pooja Samagri Delivery',
     category: 'ritual',
-    dueDate: nightBeforeDateObj.toISOString().split('T')[0],
+    dueDate: '2026-12-19',
     dueTime: '20:00',
     priority: 'urgent',
     status: 'pending',
@@ -160,7 +156,7 @@ export const initialReminders: WeddingReminder[] = [
     id: 'rem-6',
     title: 'Bridal Mehendi & Makeup Artist Call Time',
     category: 'makeup',
-    dueDate: nightBeforeDateObj.toISOString().split('T')[0],
+    dueDate: '2026-12-19',
     dueTime: '14:00',
     priority: 'high',
     status: 'in_progress',
@@ -177,7 +173,7 @@ export const initialReminders: WeddingReminder[] = [
     id: 'rem-7',
     title: 'Reserve Family Cars & Hotel Rooms for Outstation Guests',
     category: 'transport',
-    dueDate: new Date(today.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    dueDate: '2026-12-08',
     priority: 'medium',
     status: 'completed',
     assignedTo: 'Brother of Groom',
@@ -228,7 +224,7 @@ export const initialGuests: Guest[] = [
     phone: '+91 99123 44556',
     relationship: 'Friend',
     side: 'groom',
-    invitedBy: 'Rahul (Groom)',
+    invitedBy: 'Jishnu (Groom)',
     invitationSent: true,
     rsvpNightBefore: 'confirmed',
     countNightBefore: 2,
@@ -243,7 +239,7 @@ export const initialGuests: Guest[] = [
     phone: '+91 97234 11223',
     relationship: 'Colleagues',
     side: 'bride',
-    invitedBy: 'Anjali (Bride)',
+    invitedBy: 'Swathi (Bride)',
     invitationSent: true,
     rsvpNightBefore: 'declined',
     countNightBefore: 0,
@@ -273,7 +269,7 @@ export const initialGuests: Guest[] = [
     phone: '+91 98877 66554',
     relationship: 'Friend',
     side: 'groom',
-    invitedBy: 'Rahul (Groom)',
+    invitedBy: 'Jishnu (Groom)',
     invitationSent: true,
     rsvpNightBefore: 'pending',
     countNightBefore: 1,
@@ -303,7 +299,7 @@ export const initialGuests: Guest[] = [
     phone: '+91 91122 33445',
     relationship: 'Colleague',
     side: 'groom',
-    invitedBy: 'Rahul (Groom)',
+    invitedBy: 'Jishnu (Groom)',
     invitationSent: false,
     rsvpNightBefore: 'pending',
     countNightBefore: 2,

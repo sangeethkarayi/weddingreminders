@@ -4,10 +4,10 @@ import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getFirestore, doc, onSnapshot, setDoc, Firestore } from 'firebase/firestore';
 
 const STORAGE_KEYS = {
-  GUESTS: 'wedding_guests_v1',
-  REMINDERS: 'wedding_reminders_v1',
-  EVENTS: 'wedding_events_v1',
-  SETTINGS: 'wedding_settings_v1',
+  GUESTS: 'wedding_guests_v2',
+  REMINDERS: 'wedding_reminders_v2',
+  EVENTS: 'wedding_events_v2',
+  SETTINGS: 'wedding_settings_v2',
 };
 
 let firebaseApp: FirebaseApp | null = null;
@@ -18,7 +18,12 @@ let unsubscribeFirestore: (() => void) | null = null;
 export const getLocalSettings = (): WeddingSettings => {
   try {
     const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-    return data ? JSON.parse(data) : initialSettings;
+    if (!data) return initialSettings;
+    const parsed = JSON.parse(data);
+    if (parsed.groomName === 'Rahul' || !parsed.groomName) {
+      return initialSettings;
+    }
+    return parsed;
   } catch (e) {
     console.error('Error reading settings from localStorage', e);
     return initialSettings;
@@ -36,7 +41,13 @@ export const saveLocalSettings = (settings: WeddingSettings) => {
 export const getLocalGuests = (): Guest[] => {
   try {
     const data = localStorage.getItem(STORAGE_KEYS.GUESTS);
-    return data ? JSON.parse(data) : initialGuests;
+    if (!data) return initialGuests;
+    const parsed = JSON.parse(data);
+    // If older dataset, use updated list
+    if (Array.isArray(parsed) && parsed.some((g: any) => g.invitedBy?.includes('Rahul'))) {
+      return initialGuests;
+    }
+    return parsed;
   } catch (e) {
     console.error('Error reading guests from localStorage', e);
     return initialGuests;
@@ -54,7 +65,12 @@ export const saveLocalGuests = (guests: Guest[]) => {
 export const getLocalReminders = (): WeddingReminder[] => {
   try {
     const data = localStorage.getItem(STORAGE_KEYS.REMINDERS);
-    return data ? JSON.parse(data) : initialReminders;
+    if (!data) return initialReminders;
+    const parsed = JSON.parse(data);
+    if (Array.isArray(parsed) && parsed.some((r: any) => r.assignedTo?.includes('Rahul'))) {
+      return initialReminders;
+    }
+    return parsed;
   } catch (e) {
     console.error('Error reading reminders from localStorage', e);
     return initialReminders;
